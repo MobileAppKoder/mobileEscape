@@ -1,0 +1,296 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Phone Puzzle Game</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+  <div class="app-shell">
+    <!-- Phone frame -->
+    <div id="phone" class="phone-frame">
+      <!-- Status bar (always visible in-game) -->
+      <header class="status-bar">
+        <div class="status-left">
+          <span class="signal-bars">
+            <span class="bar bar-1"></span>
+            <span class="bar bar-2"></span>
+            <span class="bar bar-3"></span>
+            <span class="bar bar-4"></span>
+          </span>
+          <span class="wifi-icon">
+            <span></span><span></span><span></span>
+          </span>
+          <span class="carrier">DWMobile</span>
+        </div>
+        <div class="status-right">
+          <span class="battery">
+            <span class="battery-body">
+              <span class="battery-level" id="battery-level"></span>
+            </span>
+            <span class="battery-cap"></span>
+            <span id="battery-percent">78%</span>
+          </span>
+          <span id="status-time" class="status-time">12:34 PM</span>
+        </div>
+      </header>
+
+      <!-- Screens container -->
+      <main id="screens" class="screens">
+        <!-- SPLASH / START SCREEN -->
+        <section id="screen-splash" class="screen active">
+          <div class="splash-inner">
+            <div class="boot-logo">📱</div>
+            <h1 class="game-title">Phone Lockdown</h1>
+            <p class="game-subtitle">Crack the PIN. Hack the apps. Dial the secret call.</p>
+
+            <div class="splash-stats">
+              <div id="best-time-display">Best time: --:--</div>
+            </div>
+
+            <div class="splash-buttons">
+              <button id="btn-start" class="btn primary">Start Game</button>
+              <button id="btn-open-settings" class="btn ghost">Settings</button>
+            </div>
+          </div>
+        </section>
+
+        <!-- PUZZLE 1: LOCK SCREEN -->
+        <section id="screen-lock" class="screen">
+          <div class="lock-screen-inner">
+            <div class="lock-icon">🔒</div>
+            <h2>Enter your PIN</h2>
+            <p id="pin-attempts-text" class="muted">Attempts remaining: 10</p>
+
+            <div id="pin-slots" class="pin-slots">
+              <span class="pin-slot"></span>
+              <span class="pin-slot"></span>
+              <span class="pin-slot"></span>
+              <span class="pin-slot"></span>
+            </div>
+
+            <div class="pin-keypad">
+              <!-- 1–9 -->
+              <button class="key key-pin" data-pin-digit="1">
+                <span class="key-main">1</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="2">
+                <span class="key-main">2</span>
+                <span class="key-sub">ABC</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="3">
+                <span class="key-main">3</span>
+                <span class="key-sub">DEF</span>
+              </button>
+
+              <button class="key key-pin" data-pin-digit="4">
+                <span class="key-main">4</span>
+                <span class="key-sub">GHI</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="5">
+                <span class="key-main">5</span>
+                <span class="key-sub">JKL</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="6">
+                <span class="key-main">6</span>
+                <span class="key-sub">MNO</span>
+              </button>
+
+              <button class="key key-pin" data-pin-digit="7">
+                <span class="key-main">7</span>
+                <span class="key-sub">PQRS</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="8">
+                <span class="key-main">8</span>
+                <span class="key-sub">TUV</span>
+              </button>
+              <button class="key key-pin" data-pin-digit="9">
+                <span class="key-main">9</span>
+                <span class="key-sub">WXYZ</span>
+              </button>
+
+              <!-- spacer row -->
+              <div class="key key-spacer"></div>
+              <button class="key key-pin" data-pin-digit="0">
+                <span class="key-main">0</span>
+              </button>
+              <div class="key key-spacer"></div>
+            </div>
+          </div>
+        </section>
+
+        <!-- PUZZLE 2: APP GRID COLOR MATCH -->
+        <section id="screen-home" class="screen">
+          <div class="home-screen-inner">
+            <div class="home-info-bar">
+              <div class="home-info-left">
+                <div>Apps Puzzle</div>
+                <div id="p2-timer" class="home-timer">05:00</div>
+              </div>
+              <div class="home-info-right">
+                <div id="p2-target-color">Target color: --</div>
+                <div id="p2-streak">Streak: 0 / 5</div>
+              </div>
+            </div>
+
+            <div id="p2-grid" class="apps-grid">
+              <!-- dynamically filled -->
+            </div>
+          </div>
+        </section>
+
+        <!-- PUZZLE 3: DIALER -->
+        <section id="screen-dialer" class="screen">
+          <div class="dialer-inner">
+            <div class="dialer-header">
+              <div class="dialer-title">Dial the secret number</div>
+              <div id="dialer-hint-status" class="dialer-hint-status">
+                <!-- e.g. "+30s for correct digit" -->
+              </div>
+            </div>
+
+            <div id="dialer-display" class="dialer-display">___-____</div>
+
+            <div class="dialer-keypad">
+              <!-- Row 1 -->
+              <button class="key dial-key" data-key="1">
+                <span class="key-main">1</span>
+              </button>
+              <button class="key dial-key" data-key="2">
+                <span class="key-main">2</span>
+                <span class="key-sub">ABC</span>
+              </button>
+              <button class="key dial-key" data-key="3">
+                <span class="key-main">3</span>
+                <span class="key-sub">DEF</span>
+              </button>
+              <!-- Row 2 -->
+              <button class="key dial-key" data-key="4">
+                <span class="key-main">4</span>
+                <span class="key-sub">GHI</span>
+              </button>
+              <button class="key dial-key" data-key="5">
+                <span class="key-main">5</span>
+                <span class="key-sub">JKL</span>
+              </button>
+              <button class="key dial-key" data-key="6">
+                <span class="key-main">6</span>
+                <span class="key-sub">MNO</span>
+              </button>
+              <!-- Row 3 -->
+              <button class="key dial-key" data-key="7">
+                <span class="key-main">7</span>
+                <span class="key-sub">PQRS</span>
+              </button>
+              <button class="key dial-key" data-key="8">
+                <span class="key-main">8</span>
+                <span class="key-sub">TUV</span>
+              </button>
+              <button class="key dial-key" data-key="9">
+                <span class="key-main">9</span>
+                <span class="key-sub">WXYZ</span>
+              </button>
+              <!-- Row 4 -->
+              <button class="key dial-key" data-key="*">
+                <span class="key-main">*</span>
+              </button>
+              <button class="key dial-key" data-key="0">
+                <span class="key-main">0</span>
+                <span class="key-sub">+</span>
+              </button>
+              <button class="key dial-key" data-key="#">
+                <span class="key-main">#</span>
+              </button>
+            </div>
+
+            <div class="dialer-controls">
+              <button id="dialer-backspace" class="btn ghost small">⌫</button>
+              <button id="dialer-call" class="btn call-btn" disabled>📞</button>
+            </div>
+          </div>
+        </section>
+      </main>
+    </div>
+  </div>
+
+  <!-- SETTINGS MODAL -->
+  <div id="settings-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-body">
+      <h2>Settings</h2>
+
+      <section class="settings-section">
+        <h3>Security (Puzzle 1)</h3>
+        <label>
+          Max PIN attempts:
+          <input id="setting-pin-attempts" type="number" min="1" max="20" value="10" />
+        </label>
+      </section>
+
+      <section class="settings-section">
+        <h3>Apps Puzzle (Puzzle 2)</h3>
+        <label>
+          Grid rows:
+          <input id="setting-p2-rows" type="number" min="3" max="7" value="5" />
+        </label>
+        <label>
+          Grid columns:
+          <input id="setting-p2-cols" type="number" min="3" max="7" value="5" />
+        </label>
+        <label>
+          Target streak (same color taps):
+          <input id="setting-p2-streak" type="number" min="3" max="10" value="5" />
+        </label>
+        <label>
+          Timer (minutes):
+          <input id="setting-p2-mins" type="number" min="1" max="10" value="5" />
+        </label>
+      </section>
+
+      <section class="settings-section">
+        <h3>Dialer Puzzle (Puzzle 3)</h3>
+        <label>
+          Hint interval:
+          <select id="setting-p3-interval">
+            <option value="15">Every 15 seconds</option>
+            <option value="30" selected>Every 30 seconds</option>
+            <option value="45">Every 45 seconds</option>
+            <option value="60">Every 60 seconds</option>
+          </select>
+        </label>
+      </section>
+
+      <section class="settings-section">
+        <h3>General</h3>
+        <label class="checkbox-label">
+          <input id="setting-sound" type="checkbox" checked />
+          Enable sound effects (add your own audio files if you want)
+        </label>
+      </section>
+
+      <div class="modal-actions">
+        <button id="btn-settings-cancel" class="btn ghost">Cancel</button>
+        <button id="btn-settings-save" class="btn primary">Save</button>
+      </div>
+    </div>
+  </div>
+
+  <!-- ENDGAME MODAL -->
+  <div id="endgame-modal" class="modal hidden">
+    <div class="modal-backdrop"></div>
+    <div class="modal-body">
+      <h2 id="endgame-title">Game Over</h2>
+      <p id="endgame-message"></p>
+      <p id="endgame-time" class="endgame-time"></p>
+      <p id="endgame-best" class="endgame-best"></p>
+      <div class="modal-actions">
+        <button id="btn-endgame-close" class="btn ghost">Close</button>
+        <button id="btn-endgame-restart" class="btn primary">Play Again</button>
+      </div>
+    </div>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
