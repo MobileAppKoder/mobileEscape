@@ -834,7 +834,7 @@
 
             <!-- everything from INIT button down is inside this block -->
             <div class="title-lower">
-                <button id="init-run-btn" onclick="requestFullscreen(); Game.init();">
+                <button id="init-run-btn" onclick="startGame();">
     INITIALIZE RUN
 </button>
 
@@ -2625,6 +2625,22 @@ function requestFullscreen() {
     else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
     else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
 }
+
+function startGame() {
+    // Try fullscreen, but don't let it kill the game if it fails
+    try {
+        requestFullscreen();
+    } catch (e) {
+        console.warn('Fullscreen request failed:', e);
+    }
+
+    // Make sure canvas fits the new size (especially after fullscreen)
+    Render.resize();
+
+    // Actually start the run
+    Game.init();
+}
+
 
         /* =========================================================
            BOOTSTRAP: INITIAL RESIZE + UI SETUP
