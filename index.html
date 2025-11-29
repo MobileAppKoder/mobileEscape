@@ -35,6 +35,45 @@
         }
 
         * {
+            box-sizing: border-box;<!DOCTYPE html>
+<html lang="en">
+<head>
+    <link rel="icon" type="image/png" href="favicon.png" />
+
+    <meta charset="UTF-8" />
+    <!-- iOS Safari fullscreen -->
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+
+<!-- Android Chrome fullscreen -->
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="theme-color" content="#000000">
+
+    <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no"
+    />
+    <title>NEON ASCENSION</title>
+    <link rel="manifest" href="manifest.json">
+    <link
+        href="https://fonts.googleapis.com/css2?family=Press+Start+2P&display=swap"
+        rel="stylesheet"
+    />
+    <style>
+        /* =========================================================
+           ROOT VARIABLES / GLOBALS
+        ========================================================== */
+        :root {
+            --bg-color: #050505;
+            --main-accent: #00ff9d;
+            --danger: #ff2a2a;
+            --gold: #ffd700;
+            --font-main: 'Press Start 2P', monospace;
+            --main-accent-dim: rgba(0, 255, 157, 0.1);
+            --purple: #bc13fe;
+        }
+
+        * {
             box-sizing: border-box;
         }
 
@@ -2651,3 +2690,2620 @@ function startGame() {
     </script>
 </body>
 </html>
+
+        }
+
+        body {
+            background-color: var(--bg-color);
+            color: var(--main-accent);
+            margin: 0;
+            padding: 0;
+            overflow: hidden;
+            font-family: var(--font-main);
+            height: 100vh;
+            display: flex;
+            flex-direction: column;
+            user-select: none;
+            -webkit-user-select: none;
+        }
+
+        /* =========================================================
+           TITLE SCREEN LAYOUT TWEAKS
+        ========================================================== */
+        #class-select-title {
+            margin-top: 0;
+            margin-bottom: 12px;       /* small gap above class cards */
+        }
+
+        /* Gap between INIT RUN and SELECT CLASS */
+        #init-run-btn {
+            margin-top: 0;
+            margin-bottom: 63px;       /* visible gap before SELECT CLASS */
+        }
+
+        /* =========================================================
+           CRT SCANLINES / VIGNETTE OVERLAY
+        ========================================================== */
+        .scanlines {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: linear-gradient(
+                to bottom,
+                rgba(255, 255, 255, 0),
+                rgba(255, 255, 255, 0) 50%,
+                rgba(0, 0, 0, 0.2) 50%,
+                rgba(0, 0, 0, 0.2)
+            );
+            background-size: 100% 4px;
+            pointer-events: none;
+            z-index: 999;
+            opacity: 0.7;
+        }
+
+        /* .vignette {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100vw;
+            height: 100vh;
+            background: radial-gradient(
+                circle,
+                rgba(0, 0, 0, 0) 50%,
+                rgba(0, 0, 0, 0.9) 100%
+            );
+            pointer-events: none;
+            z-index: 998;
+        } */
+
+        /* =========================================================
+           RETRO 3D GRID BACKGROUND FOR TITLE
+        ========================================================== */
+        .retro-bg {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: #090014;
+            overflow: hidden;
+            z-index: 0;
+            perspective: 600px;
+        }
+
+        .retro-grid {
+            position: absolute;
+            bottom: -30%;
+            left: -50%;
+            width: 200%;
+            height: 100%;
+            background-image:
+                linear-gradient(rgba(188, 19, 254, 0.3) 1px, transparent 1px),
+                linear-gradient(90deg, rgba(188, 19, 254, 0.3) 1px, transparent 1px);
+            background-size: 40px 40px;
+            transform: rotateX(60deg);
+            animation: grid-scroll 2s linear infinite;
+            box-shadow: 0 0 100px rgba(188, 19, 254, 0.4);
+            mask-image: linear-gradient(to top, black 40%, transparent 100%);
+            -webkit-mask-image: linear-gradient(to top, black 40%, transparent 100%);
+        }
+
+        @keyframes grid-scroll {
+            0%   { background-position: 0 0; }
+            100% { background-position: 0 40px; }
+        }
+
+        .retro-sun {
+            position: absolute;
+            top: 15%;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 200px;
+            height: 200px;
+            background: linear-gradient(to bottom, #ffd700, #ff2a2a);
+            border-radius: 50%;
+            box-shadow: 0 0 40px rgba(255, 42, 42, 0.6);
+            mask-image: linear-gradient(
+                to bottom,
+                black 0%,
+                black 50%,
+                transparent 50%,
+                transparent 55%,
+                black 55%,
+                black 60%,
+                transparent 60%,
+                transparent 65%,
+                black 65%,
+                black 100%
+            );
+            -webkit-mask-image: linear-gradient(
+                to bottom,
+                black 0%,
+                black 50%,
+                transparent 50%,
+                transparent 55%,
+                black 55%,
+                black 60%,
+                transparent 60%,
+                transparent 65%,
+                black 65%,
+                black 100%
+            );
+        }
+
+        /* =========================================================
+           GAME WRAPPER / CANVAS LAYOUT
+        ========================================================== */
+        #game-wrapper {
+            position: relative;
+            flex-grow: 1;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            background: #000;
+            overflow: hidden;
+            z-index: 1;
+            box-shadow:
+        inset 0 0 30px rgba(0,255,157,0.5),
+        0 0 60px rgba(0,255,157,0.3);
+        }
+
+        canvas {
+            image-rendering: pixelated;
+            box-shadow:
+                0 0 25px rgba(0,255,157,1),
+                0 0 50px rgba(0,255,157,0.7),
+                0 0 100px rgba(0,255,157,0.4);
+            border: 2px solid rgba(0,255,157,1);
+        }
+
+        /* =========================================================
+           HUD (TOP OVERLAY STATS)
+        ========================================================== */
+        #ui-layer {
+            position: absolute;
+            top: 10px;
+            left: 50%;
+            transform: translateX(-50%);
+            width: 95%;
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            pointer-events: none;
+            z-index: 10;
+            text-shadow: 2px 2px 0 #000;
+            font-size: 10px;
+            gap: 8px;
+            flex-wrap: wrap;
+        }
+
+        .stat-box {
+    border: 2px solid rgba(0,255,157,1);
+    box-shadow:
+        0 0 15px rgba(0,255,157,0.8),
+        0 0 35px rgba(0,255,157,0.4);
+    background: rgba(0, 0, 0, 0.8);
+    padding: 10px 8px;
+    border-radius: 6px;
+    flex: 0 0 auto;         /* don’t squash them */
+    min-width: auto;       /* keeps them chunky */
+}
+
+
+
+
+        #hud-left   { text-align: left; }
+        #hud-center { text-align: center; }
+        #hud-right  { text-align: right; }
+
+        .hud-name {
+            color: #fff;
+            margin-bottom: 5px;
+        }
+
+        .hud-small-line {
+            font-size: 8px;
+            display: flex;
+            gap: 4px;
+            flex-wrap: wrap;
+            align-items: baseline;
+        }
+
+        /* Extra HUD status line under MP/STR/CRIT */
+        .hud-extra-status {
+            display: block;
+            margin-top: 2px;
+            font-size: 8px;
+        }
+
+        /* Warrior: Fury */
+        .hud-extra-status.fury {
+            color: var(--gold);
+            text-shadow: 0 0 4px var(--gold), 0 0 8px #ff8800;
+        }
+
+        /* Rogue: Invis / Backstab */
+        .hud-extra-status.rogue {
+            color: var(--purple);
+            text-shadow: 0 0 4px var(--purple), 0 0 8px #ff00ff;
+        }
+
+        /* Mage: Fireball ready */
+        .hud-extra-status.fireball {
+            color: #ff6600;
+            text-shadow: 0 0 4px #ff6600, 0 0 8px #ff3300;
+        }
+
+        .hud-small-line + .bar-container {
+            margin-top: 4px;
+        }
+
+        .hud-turn-label {
+            font-size: 8px;
+            margin-top: 5px;
+            color: #aaa;
+        }
+
+        .bar-container {
+            width: 100px;
+            height: 8px;
+            background: #222;
+            margin-top: 4px;
+            position: relative;
+            border: 1px solid #444;
+        }
+
+        .bar-fill {
+            height: 100%;
+            transition: width 0.2s;
+        }
+
+        .hp-fill { background: var(--danger); box-shadow: 0 0 5px var(--danger); }
+        .xp-fill { background: var(--gold);  box-shadow: 0 0 5px var(--gold); }
+
+        /* =========================================================
+           LOG WINDOW (BOTTOM-LEFT TEXT)
+        ========================================================== */
+        #log-container {
+            position: absolute;
+            bottom: 15px;
+            left: 10px;
+            width: 40%;
+            pointer-events: none;
+            display: flex;
+            flex-direction: column;
+            justify-content: flex-end;
+            z-index: 10;
+            font-size: 10px;
+            text-shadow: 1px 1px 0 #000;
+        }
+
+        .log-msg {
+            margin-top: 2px;
+            opacity: 0.7;
+            transition: opacity 0.5s;
+        }
+
+        .log-msg.fresh {
+            opacity: 1;
+            color: #fff;
+            text-shadow: 0 0 5px var(--main-accent);
+        }
+
+        .log-msg.danger { color: #ff5555; }
+        .log-msg.gold   { color: #ffff55; }
+
+        /* =========================================================
+           MODAL STYLES (BASE)
+        ========================================================== */
+        .modal {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.9);
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            z-index: 100;
+            opacity: 0;
+            pointer-events: none;
+            transition: opacity 0.3s;
+        }
+
+        .modal.active {
+            opacity: 1;
+            pointer-events: auto;
+        }
+
+        .modal-box {
+            background: #0a0a0a;
+            border: 2px solid var(--main-accent);
+            padding: 30px;
+            text-align: center;
+            max-width: 500px;
+            width: 90%;
+            box-shadow: 0 0 30px rgba(0, 255, 157, 0.2), inset 0 0 20px rgba(0,0,0,0.8);
+            position: relative;
+        }
+
+        /* =========================================================
+           TITLE SCREEN OVERRIDES
+        ========================================================== */
+        #modal-start {
+            background: transparent; /* Let retro grid show */
+        }
+
+        #modal-start .modal-box {
+            background: transparent;
+            border: none;
+            box-shadow: none;
+            max-width: 800px;
+            width: 100%;
+            height: 100%;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            z-index: 2; /* Above grid */
+        }
+
+        /* Block containing INIT, SELECT CLASS, cards, highscores */
+        .title-lower {
+            margin-top: 80px;      /* adjust this if you want everything lower/higher */
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+        }
+
+        /* =========================================================
+           GLITCH TITLE ANIMATION
+        ========================================================== */
+        .glitch-title {
+            font-size: 40px;
+            color: #fff;
+            position: relative;
+            margin-bottom: 40px;
+            text-shadow: 4px 4px 0px var(--purple);
+            animation: pulse-glow 2s infinite;
+        }
+
+        @media (max-width: 600px) {
+            .glitch-title {
+                font-size: 24px;
+                margin-bottom: 20px;
+            }
+        }
+
+        .glitch-title::before,
+        .glitch-title::after {
+            content: attr(data-text);
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: transparent;
+        }
+
+        .glitch-title::before {
+            left: 2px;
+            text-shadow: -2px 0 var(--danger);
+            clip: rect(24px, 550px, 90px, 0);
+            animation: glitch-anim-2 3s infinite linear alternate-reverse;
+        }
+
+        .glitch-title::after {
+            left: -2px;
+            text-shadow: -2px 0 var(--main-accent);
+            clip: rect(85px, 550px, 140px, 0);
+            animation: glitch-anim 2.5s infinite linear alternate-reverse;
+        }
+
+        @keyframes glitch-anim {
+            0%   { clip: rect(13px, 9999px, 81px, 0); }
+            20%  { clip: rect(89px, 9999px, 120px, 0); }
+            40%  { clip: rect(4px, 9999px, 134px, 0); }
+            60%  { clip: rect(45px, 9999px, 66px, 0); }
+            80%  { clip: rect(98px, 9999px, 13px, 0); }
+            100% { clip: rect(24px, 9999px, 102px, 0); }
+        }
+
+        @keyframes glitch-anim-2 {
+            0%   { clip: rect(65px, 9999px, 11px, 0); }
+            20%  { clip: rect(13px, 9999px, 86px, 0); }
+            40%  { clip: rect(90px, 9999px, 20px, 0); }
+            60%  { clip: rect(5px, 9999px, 49px, 0); }
+            80%  { clip: rect(32px, 9999px, 94px, 0); }
+            100% { clip: rect(12px, 9999px, 145px, 0); }
+        }
+
+        @keyframes pulse-glow {
+            0%,
+            100% { text-shadow: 4px 4px 0 var(--purple), 0 0 20px var(--purple); }
+            50%  { text-shadow: 4px 4px 0 var(--purple), 0 0 40px var(--main-accent); }
+        }
+
+        /* =========================================================
+           BUTTONS & GENERIC UI
+        ========================================================== */
+        button {
+            background: rgba(0,0,0,0.6);
+            border: 2px solid var(--main-accent);
+            color: var(--main-accent);
+            padding: 15px 30px;
+            font-family: var(--font-main);
+            font-size: 14px;
+            margin: 15px;
+            cursor: pointer;
+            transition: all 0.2s;
+            text-transform: uppercase;
+            box-shadow: 0 0 10px var(--main-accent-dim);
+            position: relative;
+            overflow: hidden;
+            border-color: #00ffcc;
+            box-shadow: 0 0 20px #00ffcc,
+                0 0 40px rgba(0,255,200,0.8),
+                0 0 80px rgba(0,255,200,0.4);
+        }
+
+        button:hover {
+            background: var(--main-accent);
+            color: #000;
+            box-shadow: 0 0 25px var(--main-accent);
+            transform: translateY(-2px);
+        }
+
+        button:active {
+            transform: scale(0.95);
+        }
+
+        /* Special text blocks */
+        .death-stats {
+            margin: 20px 0;
+            line-height: 1.6;
+            font-size: 12px;
+        }
+
+        .stats-body {
+            margin: 15px 0;
+            font-size: 10px;
+            line-height: 1.6;
+            text-align: left;
+        }
+
+        .manual-body {
+            font-size: 10px;
+            text-align: left;
+            max-height: 60vh;
+            overflow-y: auto;
+        }
+
+        /* =========================================================
+           CLASS SELECTION CARDS
+        ========================================================== */
+        .class-select {
+            display: flex;
+            gap: 20px;
+            justify-content: center;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .class-card {
+            background: rgba(0, 10, 20, 0.7);
+            border: 1px solid #333;
+            padding: 15px;
+            width: 160px;
+            min-height: 100px;
+            cursor: pointer;
+            transition: all 0.3s;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+            position: relative;
+            backdrop-filter: blur(2px);
+        }
+
+        .class-card:hover {
+            border-color: var(--main-accent);
+            box-shadow: 0 0 15px var(--main-accent-dim);
+            transform: translateY(-5px);
+            background: rgba(0, 255, 157, 0.05);
+        }
+
+        .class-card.selected {
+            border-color: var(--gold);
+            background: rgba(255, 215, 0, 0.1);
+            box-shadow: 0 0 20px rgba(255, 215, 0, 0.4);
+            transform: scale(1.1);
+            z-index: 10;
+        }
+
+        .class-card.selected .class-name {
+            color: var(--gold);
+            text-shadow: 0 0 5px var(--gold);
+        }
+
+        .class-name {
+            color: var(--main-accent);
+            font-size: 20px;
+        }
+
+        .class-stats-line {
+            font-size: 9px;
+            margin-top: 5px;
+            color: #ccc;
+        }
+
+        .class-scroll-label {
+            font-size: 16px;
+            margin-top: 3px;
+            color: #666;
+        }
+
+        #class-desc {
+            margin: 10px 0 20px 0;
+            font-size: 10px;
+            min-height: 30px;
+            color: #fff;
+            text-align: center;
+            text-shadow: 0 0 5px var(--main-accent);
+            max-width: 600px;
+            background: rgba(0,0,0,0.5);
+            padding: 10px;
+            border-radius: 4px;
+            border-left: 2px solid var(--main-accent);
+            border-right: 2px solid var(--main-accent);
+        }
+
+        /* =========================================================
+           HIGHSCORE PANEL
+        ========================================================== */
+        .highscore-panel {
+            margin-top: auto;
+            margin-bottom: 20px;
+            font-size: 11px;
+            color: #aaa;
+            text-align: center;
+            width: 100%;
+            background: rgba(0,0,0,0.5);
+            padding: 20px 10px 10px 10px; /* top padding includes gap under HIGHSCORES */
+            border-top: 1px solid #333;
+        }
+
+        .highscore-panel b {
+            display: block;
+            margin-bottom: 8px;
+        }
+
+        .highscore-grid {
+            display: grid;
+            grid-template-columns: 80px 1fr 1fr 1fr 1fr;
+            gap: 6px;
+            font-size: 11px;
+        }
+
+        .highscore-row {
+            margin-bottom: 8px;
+        }
+
+        .hs-class {
+            display: inline-block;
+            width: 80px;
+            text-align: right;
+            margin-right: 8px;
+            color: var(--purple);
+        }
+
+        .highscore-header {
+            font-weight: bold;
+            color: var(--main-accent);
+            margin-bottom: 6px;
+            border-bottom: 1px solid #333;
+            padding-bottom: 4px;
+        }
+
+        /* =========================================================
+           MOBILE CONTROLS (9-BUTTON GRID)
+        ========================================================== */
+        #mobile-controls {
+            display: none;
+        }
+
+        .ctrl-btn {
+            background: #111;
+            border: 1px solid #444;
+            color: #00ffcc;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+            font-size: 12px;
+            border-radius: 4px;
+        }
+
+        .ctrl-btn:active {
+            background: #333;
+            border-color: var(--main-accent);
+            color: #fff;
+        }
+
+        /* =========================================================
+           RESPONSIVE (MOBILE) LAYOUT ADJUSTMENTS
+        ========================================================== */
+        @media (max-width: 768px) {
+            body {
+                height: 100vh;
+            }
+
+            #mobile-controls {
+                display: grid;
+                grid-template-columns: repeat(3, 1fr);
+                grid-auto-rows: 1fr;
+                gap: 5px;
+                padding: 5px;
+                background: #000;
+                border-top: 1px solid #333;
+                flex: 0 0 35vh;
+            }
+
+            #log-container {
+                position: fixed;
+                bottom: calc(35vh + 5px);
+                left: 0;
+                width: 100%;
+                padding: 6px 10px;
+                background: rgba(0, 0, 0, 0.8);
+            }
+        }
+    </style>
+</head>
+<body>
+    <!-- =========================================================
+         GLOBAL OVERLAYS (CRT / VIGNETTE)
+    ========================================================== -->
+    <div class="scanlines"></div>
+    <!-- <div class="vignette"></div> -->
+
+    <!-- =========================================================
+         MAIN GAME WRAPPER + CANVAS + HUD
+    ========================================================== -->
+    <div id="game-wrapper">
+        <canvas id="gameCanvas"></canvas>
+
+        <!-- ===================== HUD / STATS BAR ===================== -->
+        <div id="ui-layer">
+            <!-- LEFT: HP / XP / MP/STR/CRIT -->
+            <div class="stat-box" id="hud-left">
+                <div id="hud-name" class="hud-name">PLAYER</div>
+
+                <div class="hud-small-line">
+                    HP <span id="hud-hp-text">20/20</span>
+                </div>
+                <div class="bar-container">
+                    <div
+                        id="hud-hp-bar"
+                        class="bar-fill hp-fill"
+                        style="width: 100%;"
+                    ></div>
+                </div>
+
+                <div class="hud-small-line">
+                    XP <span id="hud-xp-text">0/20</span>
+                </div>
+                <div class="bar-container">
+                    <div
+                        id="hud-xp-bar"
+                        class="bar-fill xp-fill"
+                        style="width: 0%;"
+                    ></div>
+                </div>
+
+                <div class="hud-small-line">
+                    <span id="hud-extra-label">MP</span>
+                    <span id="hud-extra-text">0/0</span>
+                </div>
+            </div>
+
+            <!-- CENTER: SCORE -->
+            <div class="stat-box" id="hud-center">
+                <div class="hud-small-line">SCORE</div>
+                <div
+                    id="hud-score"
+                    style="font-size: 14px; margin-top: 4px; color: var(--gold);"
+                >
+                    0
+                </div>
+                <div class="hud-small-line">
+                    Kills: <span id="hud-kills">0</span>
+                </div>
+
+                <!-- Center screen status banner (reserved for future use) -->
+                <div id="hud-status-banner" class="hud-status-banner"></div>
+            </div>
+
+            <!-- RIGHT: Depth, Gold, Potions, Scrolls, Turn -->
+            <div class="stat-box" id="hud-right">
+                <div style="color: var(--gold);">
+                    Dlvl: <span id="hud-dlvl">1</span>
+                </div>
+                <div style="color: var(--gold);">
+                    Lv: <span id="hud-lvl">1</span>
+                </div>
+                <div style="color: var(--gold);">
+                    Gold: <span id="hud-gold">0</span>
+                </div>
+                <div style="color: var(--gold);">
+                    Potions: <span id="hud-potions">3</span>
+                </div>
+                <div style="color: var(--gold);">
+                    Scrolls: <span id="hud-scrolls">0</span>
+                </div>
+                <div class="hud-turn-label">
+                    Turn: <span id="hud-turn">0</span>
+                </div>
+            </div>
+        </div>
+
+        <!-- LOG MESSAGES (BOTTOM-LEFT) -->
+        <div id="log-container"></div>
+    </div>
+
+    <!-- =========================================================
+         MOBILE CONTROLS (9 BUTTON GRID)
+    ========================================================== -->
+    <div id="mobile-controls">
+        <!-- Row 1 -->
+        <div class="ctrl-btn" onclick="Input.handle('MAGIC')" id="btn-magic">
+            MAGIC(F)
+        </div>
+        <div class="ctrl-btn" onclick="Input.handle('UP')">UP</div>
+        <div class="ctrl-btn" onclick="Input.handle('MENU')">MENU(M)</div>
+        <!-- Row 2 -->
+        <div class="ctrl-btn" onclick="Input.handle('LEFT')">LEFT</div>
+        <div class="ctrl-btn" onclick="Input.handle('ACT')">ACT(A)</div>
+        <div class="ctrl-btn" onclick="Input.handle('RIGHT')">RIGHT</div>
+        <!-- Row 3 -->
+        <div class="ctrl-btn" onclick="Input.handle('HEAL')">HEAL(P)</div>
+        <div class="ctrl-btn" onclick="Input.handle('DOWN')">DOWN</div>
+        <div class="ctrl-btn" onclick="Input.handle('STATS')">STATS(I)</div>
+    </div>
+
+    <!-- =========================================================
+         TITLE SCREEN MODAL (RETRO BACKGROUND + CLASS SELECT)
+    ========================================================== -->
+    <div id="modal-start" class="modal active">
+        <div class="retro-bg">
+            <div class="retro-sun"></div>
+            <div class="retro-grid"></div>
+        </div>
+
+        <div class="modal-box">
+            <h1 class="glitch-title" data-text="NEON ASCENSION">NEON ASCENSION</h1>
+
+            <!-- everything from INIT button down is inside this block -->
+            <div class="title-lower">
+                <button id="init-run-btn" onclick="startGame();">
+    INITIALIZE RUN
+</button>
+
+
+                <h2 id="class-select-title" class="hud-small-line" style="font-size: 12px; color: #aaa;">
+                    SELECT CLASS
+                </h2>
+
+                <div class="class-select" id="class-container"></div>
+                <div id="class-desc"></div>
+
+                <div id="highscore-panel" class="highscore-panel"></div>
+            </div>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         DEATH SCREEN MODAL
+    ========================================================== -->
+    <div id="modal-death" class="modal">
+        <div class="modal-box">
+            <h1 style="color: var(--danger); text-shadow: 4px 4px 0 #300;">
+                CRITICAL FAILURE
+            </h1>
+            <div id="death-stats" class="death-stats"></div>
+            <button onclick="location.reload()">RETURN TO TITLE</button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         STATS MODAL (FORMERLY INVENTORY)
+    ========================================================== -->
+    <div id="modal-inv" class="modal">
+        <div class="modal-box">
+            <h2>STATS</h2>
+            <div id="inv-body" class="stats-body"></div>
+            <button
+                onclick="document.getElementById('modal-inv').classList.remove('active')"
+            >
+                CLOSE
+            </button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MAIN MENU MODAL
+    ========================================================== -->
+    <div id="modal-menu" class="modal">
+        <div class="modal-box">
+            <h2>MENU</h2>
+            <button onclick="Game.closeMenu()">RESUME</button>
+            <button onclick="Game.actionInventory('MENU')">STATS</button>
+            <button onclick="Game.showManual()">MANUAL</button>
+            <button id="sound-toggle-btn" onclick="Game.toggleSound()">SOUND: ON</button>
+            <button id="inv-toggle-btn" onclick="Game.toggleInvincible()">INVINCIBLE: OFF</button>
+            <button onclick="Game.exitToMain()">EXIT TO TITLE</button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         MANUAL MODAL
+    ========================================================== -->
+    <div id="modal-manual" class="modal">
+        <div class="modal-box">
+            <h2>MANUAL</h2>
+            <div class="manual-body">
+                <b>Game:</b> NEON ASCENSION<br /><br />
+
+                <b>Goal</b><br />
+                Descend deeper into the neon dungeon, survive as long as you
+                can, and push your class to a new high score. Enemies get tougher
+                as depth increases.<br /><br />
+
+                <b>Controls</b><br />
+                Move: Arrow keys or on-screen arrows.<br />
+                ACT: Attack adjacent enemies or use stairs/shrines.<br />
+                HEAL: Drink a potion to restore HP.<br />
+                MAGIC / SCROLL: Class special button.<br />
+                STATS: View your stats and inventory.<br />
+                MENU: Pause, view manual, toggle sound/invincible.<br /><br />
+
+                <b>Classes</b><br />
+                <u>WARRIOR</u>: High HP melee fighter. Gains +1 STR per level.
+                Finds Scrolls of Fury: next melee hit deals +10 damage and heals 5 HP.<br /><br />
+
+                <u>ROGUE</u>: Agile striker with crit. Gains +5% crit chance per
+                level. Finds Scrolls of Invisibility: 3 turns unseen and a devastating backstab on your next attack.<br /><br />
+
+                <u>MAGE</u>: Fragile spellcaster with mana. Starts with FIREBALL
+                (costs 5 MP, damages all visible enemies). Gains +1 max mana per level.
+                Finds Spellshield scrolls: grants 10 temporary shield HP that
+                absorb damage until depleted or you change dungeon level.<br /><br />
+
+                <b>Fireball (Mage)</b><br />
+                Costs 5 mana. Deals heavy damage to all visible enemies on screen.
+                Mana slowly regenerates over time. You can no longer just "wait" as a free action;<br />
+                passing a turn is done through movement, actions, or Fireball usage.<br /><br />
+
+                <b>Potions & Shrines</b><br />
+                Potions heal you. Your max potion capacity increases every few levels.
+                Shrines restore all your potions once per floor.<br /><br />
+
+                <b>Score</b><br />
+                Score is based on depth, gold, and monsters defeated:<br />
+                &nbsp;&nbsp;Score = Depth × 100 + Gold × 2 + Kills × 5<br />
+                The center HUD shows your current score. The title screen
+                displays the best score reached for each class.<br />
+            </div>
+            <button onclick="Game.closeManual()">BACK</button>
+        </div>
+    </div>
+
+    <!-- =========================================================
+         GAME SCRIPT
+    ========================================================== -->
+    <script>
+        /* =========================================================
+           HIGHSCORE STORAGE KEY PREFIX
+        ========================================================== */
+        const HS_KEY_PREFIX = 'neonAscensionHighScore_';
+
+        /* =========================================================
+           CONFIGURATION CONSTANTS (TILES, COLORS, CLASSES)
+        ========================================================== */
+        const C = {
+            tileSize: 32,
+            cols: 40,
+            rows: 25,
+            mapW: 60,
+            mapH: 60,
+            colors: {
+                bg: '#050505',
+                wall: '#111',
+                wallLit: '#222',
+                floor: '#0a0a0a',
+                floorLit: '#1a1a1a',
+                fog: '#000',
+            },
+            classes: [
+                {
+                    id: 'warrior',
+                    name: 'WARRIOR',
+                    hp: 30,
+                    str: 4,
+                    crit: 0,
+                    mana: 0,
+                    scrollShort: 'Fury',
+                    desc: 'Armored frontliner. Scroll of Fury boosts your next strike and heals you.',
+                },
+                {
+                    id: 'rogue',
+                    name: 'ROGUE',
+                    hp: 20,
+                    str: 2,
+                    crit: 0.3,
+                    mana: 0,
+                    scrollShort: 'Invis',
+                    desc: 'Agile striker. Scroll of Invisibility lets you vanish and backstab.',
+                },
+                {
+                    id: 'mage',
+                    name: 'MAGE',
+                    hp: 15,
+                    str: 1,
+                    crit: 0,
+                    mana: 5,
+                    scrollShort: 'Shield',
+                    desc: 'Fragile caster. Fireball, mana pool, and Spellshield scrolls.',
+                },
+            ],
+        };
+
+        /* =========================================================
+           AUDIO SYSTEM (SIMPLE SYNTH SFX)
+        ========================================================== */
+        const AudioSys = {
+            ctx: null,
+            muted: false,
+
+            init() {
+                if (!this.ctx) {
+                    this.ctx =
+                        new (window.AudioContext || window.webkitAudioContext)();
+                }
+            },
+
+            playTone(freq, type, dur, vol = 0.1) {
+                if (!this.ctx || this.muted) return;
+                const osc = this.ctx.createOscillator();
+                const gain = this.ctx.createGain();
+                osc.type = type;
+                osc.frequency.setValueAtTime(freq, this.ctx.currentTime);
+                gain.gain.setValueAtTime(vol, this.ctx.currentTime);
+                gain.gain.exponentialRampToValueAtTime(
+                    0.01,
+                    this.ctx.currentTime + dur
+                );
+                osc.connect(gain);
+                gain.connect(this.ctx.destination);
+                osc.start();
+                osc.stop(this.ctx.currentTime + dur);
+            },
+
+            sfx(name) {
+                switch (name) {
+                    case 'step':
+                        this.playTone(
+                            100 + Math.random() * 50,
+                            'square',
+                            0.05,
+                            0.02
+                        );
+                        break;
+                    case 'hit':
+                        this.playTone(100, 'sawtooth', 0.1, 0.1);
+                        this.playTone(50, 'square', 0.2, 0.1);
+                        break;
+                    case 'kill':
+                        this.playTone(400, 'sawtooth', 0.3, 0.1);
+                        break;
+                    case 'gold':
+                        this.playTone(1200, 'sine', 0.1, 0.05);
+                        this.playTone(1600, 'sine', 0.2, 0.05);
+                        break;
+                    case 'magic':
+                        this.playTone(
+                            600 + Math.random() * 200,
+                            'triangle',
+                            0.3,
+                            0.05
+                        );
+                        break;
+                }
+            },
+        };
+
+        /* =========================================================
+           RENDERER (CANVAS, CAMERA, TILE DRAWING)
+        ========================================================== */
+        const gameCanvas = document.getElementById('gameCanvas');
+
+        const Render = {
+            canvas: gameCanvas,
+            ctx: gameCanvas.getContext('2d'),
+            camera: { x: 0, y: 0 },
+            shake: 0,
+
+            resize() {
+                this.canvas.width = window.innerWidth;
+                this.canvas.height = window.innerHeight;
+                this.ctx.imageSmoothingEnabled = false;
+            },
+
+            clear() {
+                this.ctx.fillStyle = C.colors.bg;
+                this.ctx.fillRect(0, 0, this.canvas.width, this.canvas.height);
+            },
+
+            updateCamera(targetX, targetY) {
+                const tx = targetX * C.tileSize - this.canvas.width / 2;
+                const ty = targetY * C.tileSize - this.canvas.height / 2;
+
+                this.camera.x += (tx - this.camera.x) * 0.1;
+                this.camera.y += (ty - this.camera.y) * 0.1;
+
+                if (this.shake > 0) {
+                    this.camera.x += (Math.random() - 0.5) * this.shake;
+                    this.camera.y += (Math.random() - 0.5) * this.shake;
+                    this.shake *= 0.9;
+                    if (this.shake < 0.5) this.shake = 0;
+                }
+            },
+
+            drawTile(x, y, char, color, bg, glow = false) {
+                const sx = Math.floor(x * C.tileSize - this.camera.x);
+                const sy = Math.floor(y * C.tileSize - this.camera.y);
+
+                if (
+                    sx < -C.tileSize ||
+                    sy < -C.tileSize ||
+                    sx > this.canvas.width ||
+                    sy > this.canvas.height
+                ) {
+                    return;
+                }
+
+                if (bg) {
+                    this.ctx.fillStyle = bg;
+                    this.ctx.fillRect(sx, sy, C.tileSize, C.tileSize);
+                }
+
+                if (char) {
+                    this.ctx.font = `${C.tileSize * 0.8}px 'Press Start 2P'`;
+                    this.ctx.textAlign = 'center';
+                    this.ctx.textBaseline = 'middle';
+
+                    if (glow) {
+                        this.ctx.shadowBlur = 10;
+                        this.ctx.shadowColor = color;
+                    } else {
+                        this.ctx.shadowBlur = 0;
+                    }
+
+                    this.ctx.fillStyle = color;
+                    this.ctx.fillText(
+                        char,
+                        sx + C.tileSize / 2,
+                        sy + C.tileSize / 2
+                    );
+                    this.ctx.shadowBlur = 0;
+                }
+            },
+        };
+
+        /* =========================================================
+           PARTICLE SYSTEM (DAMAGE NUMBERS / BLOOD / TEXT)
+        ========================================================== */
+        class Particle {
+            constructor(x, y, color, type) {
+                this.x = x * C.tileSize + C.tileSize / 2;
+                this.y = y * C.tileSize + C.tileSize / 2;
+                this.vx = (Math.random() - 0.5) * 4;
+                this.vy = (Math.random() - 0.5) * 4;
+                this.life = 1.0;
+                this.color = color;
+                this.type = type;
+                if (type === 'text') {
+                    this.text = color;
+                    this.color = '#fff';
+                    this.vy = -1;
+                    this.vx = 0;
+                }
+            }
+
+            update() {
+                this.x += this.vx;
+                this.y += this.vy;
+                this.life -= 0.03;
+                if (this.type !== 'text') {
+                    this.vy += 0.1;
+                }
+            }
+
+            draw(ctx, camX, camY) {
+                const sx = this.x - camX;
+                const sy = this.y - camY;
+                ctx.globalAlpha = this.life;
+
+                if (this.type === 'text') {
+                    ctx.fillStyle = '#fff';
+                    ctx.font = '10px "Press Start 2P"';
+                    ctx.strokeStyle = '#000';
+                    ctx.lineWidth = 2;
+                    ctx.strokeText(this.text, sx, sy);
+                    ctx.fillText(this.text, sx, sy);
+                } else {
+                    ctx.fillStyle = this.color;
+                    ctx.fillRect(sx, sy, 3, 3);
+                }
+
+                ctx.globalAlpha = 1.0;
+            }
+        }
+
+        /* =========================================================
+           ENTITY BASE CLASS + PLAYER + MONSTER
+        ========================================================== */
+        class Entity {
+            constructor(x, y, char, color, name, stats = {}) {
+                this.x = x;
+                this.y = y;
+                this.displayX = x;
+                this.displayY = y;
+                this.char = char;
+                this.color = color;
+                this.name = name;
+                this.hp = stats.hp || 10;
+                this.maxHp = this.hp;
+                this.str = stats.str || 2;
+                this.dead = false;
+                this.isPlayer = false;
+                this.classId = null;
+            }
+
+            updateDisplay() {
+                this.displayX += (this.x - this.displayX) * 0.2;
+                this.displayY += (this.y - this.displayY) * 0.2;
+            }
+
+            takeDamage(amt) {
+                if (this.isPlayer) {
+                    if (Game.invincible) {
+                        Game.log('Attack absorbed. INVINCIBLE!', 'gold');
+                        AudioSys.sfx('magic');
+                        return;
+                    }
+                    if (this.classId === 'mage' && this.mageShield > 0) {
+                        const absorbed = Math.min(this.mageShield, amt);
+                        this.mageShield -= absorbed;
+                        amt -= absorbed;
+                        Game.log(`Spellshield absorbed ${absorbed} damage.`, 'gold');
+                        if (amt <= 0) return;
+                    }
+                }
+
+                this.hp -= amt;
+                Game.spawnParticles(this.x, this.y, `-${amt}`, 'text');
+                Game.spawnParticles(this.x, this.y, '#900', 'blood');
+
+                if (this.hp <= 0) {
+                    this.dead = true;
+                    AudioSys.sfx('kill');
+                    if (!this.isPlayer) {
+                        Game.onMonsterKilled(this);
+                        Game.log(`Defeated ${this.name}.`, 'gold');
+                        if (Game.player) {
+                            const gain = Math.floor(Math.random() * 5) + 1;
+                            Game.player.gold += gain;
+                            Game.log(`Looted ${gain} gold.`, 'gold');
+
+                            const xpGain = Game.getXPFor(this);
+                            Game.player.xp += xpGain;
+                            Game.log(`Gained ${xpGain} XP.`, 'gold');
+                            Game.checkLevelUp();
+                        }
+                    }
+                } else {
+                    AudioSys.sfx('hit');
+                }
+            }
+        }
+
+        class Player extends Entity {
+            constructor(x, y, clsIdx) {
+                const cls = C.classes[clsIdx];
+                super(x, y, '@', '#fff', cls.name, {
+                    hp: cls.hp,
+                    str: cls.str,
+                });
+                this.classId = cls.id;
+                this.isPlayer = true;
+                this.gold = 0;
+                this.xp = 0;
+                this.level = 1;
+                this.xpToNext = 20;
+
+                this.critChance = cls.crit || 0;
+                if (cls.mana) {
+                    this.mana = cls.mana;
+                    this.maxMana = cls.mana;
+                } else {
+                    this.mana = 0;
+                    this.maxMana = 0;
+                }
+                this.mageShield = 0;
+            }
+        }
+
+        class Monster extends Entity {
+            constructor(x, y, difficulty) {
+                const types = [
+                    { char: 'r', color: '#a55', name: 'Rat',    hp: 5,  str: 1 },
+                    { char: 'g', color: '#5f5', name: 'Goblin', hp: 10, str: 2 },
+                    { char: 'o', color: '#5a5', name: 'Orc',    hp: 20, str: 4 },
+                    { char: 'D', color: '#f22', name: 'Dragon', hp: 50, str: 8 },
+                ];
+                const idx = Math.min(
+                    types.length - 1,
+                    Math.floor(Math.random() * (difficulty / 2 + 1))
+                );
+                const t = types[idx];
+                super(x, y, t.char, t.color, t.name, {
+                    hp: t.hp + difficulty,
+                    str: t.str + Math.floor(difficulty / 3),
+                });
+            }
+        }
+
+        /* =========================================================
+           MAIN GAME OBJECT
+           - map generation
+           - movement / combat
+           - FOV
+           - UI / HUD / highscores
+        ========================================================== */
+        const Game = {
+            map: [],
+            entities: [],
+            particles: [],
+            player: null,
+            dlvl: 1,
+            turn: 0,
+            selectedClass: 0,
+            running: false,
+            potions: 3,
+            maxPotions: 3,
+            invincible: false,
+            monstersRemaining: 0,
+            monstersKilled: 0,
+
+            // Scroll-related (Warrior / Rogue / Mage shield)
+            furyScrolls: 0,
+            invisScrolls: 0,
+            pendingFury: false,
+            invisibleTurns: 0,
+            backstabReady: false,
+
+            /* -----------------------------------------------------
+               INITIAL UI SETUP (CLASS CARDS + HIGHSCORES + RESIZE)
+            ------------------------------------------------------ */
+            setupUI() {
+                const container = document.getElementById('class-container');
+                container.innerHTML = '';
+
+                C.classes.forEach((c, i) => {
+                    const div = document.createElement('div');
+                    div.className = `class-card ${i === 0 ? 'selected' : ''}`;
+                    div.innerHTML = `
+                        <div class="class-name">${c.name}</div>
+                        <div class="class-stats-line">
+                            HP ${c.hp} | STR ${c.str}
+                        </div>
+                        <div class="class-scroll-label">
+                            ${c.scrollShort}
+                        </div>
+                    `;
+                    div.onclick = () => {
+                        document
+                            .querySelectorAll('.class-card')
+                            .forEach(d => d.classList.remove('selected'));
+                        div.classList.add('selected');
+                        this.selectedClass = i;
+                        document.getElementById('class-desc').innerText = c.desc;
+                        this.updateMagicButtonLabel();
+                    };
+                    container.appendChild(div);
+                });
+
+                // default description
+                document.getElementById('class-desc').innerText =
+                    C.classes[0].desc;
+
+                this.updateMagicButtonLabel();
+                this.renderHighScores();
+
+                Render.resize();
+                window.addEventListener('resize', () => Render.resize());
+            },
+
+            /* -----------------------------------------------------
+               UPDATE "MAGIC" BUTTON TEXT BY CLASS
+            ------------------------------------------------------ */
+            updateMagicButtonLabel() {
+                const cls = C.classes[this.selectedClass];
+                const btn = document.getElementById('btn-magic');
+                if (!btn) return;
+                if (cls.id === 'mage') btn.textContent = 'MAGIC(F)';
+                else btn.textContent = 'SCROLL(F)';
+            },
+
+            /* -----------------------------------------------------
+               RENDER TITLE SCREEN HIGHSCORES
+            ------------------------------------------------------ */
+            renderHighScores() {
+                const panel = document.getElementById('highscore-panel');
+                if (!panel) return;
+
+                panel.innerHTML = `
+                    <b>HIGHSCORES</b>
+                    <div class="highscore-grid highscore-header">
+                        <div>CLASS</div>
+                        <div>SCORE</div>
+                        <div>DEPTH</div>
+                        <div>KILLS</div>
+                        <!-- <div>GOLD</div> -->
+                    </div>
+                `;
+
+                C.classes.forEach(cls => {
+                    const key = HS_KEY_PREFIX + cls.id;
+                    const hs = JSON.parse(localStorage.getItem(key) || 'null');
+
+                    const row = document.createElement('div');
+                    row.className = 'highscore-row';
+
+                    if (hs) {
+                        row.innerHTML = `
+                            <div class="highscore-grid">
+                                <div class="hs-class">${cls.name}</div>
+                                <div>${hs.bestScore}</div>
+                                <div>${hs.bestDepth}</div>
+                                <div>${hs.bestKills}</div>
+                                <!-- <div>${hs.bestGold}</div> -->
+                            </div>
+                        `;
+                    } else {
+                        row.innerHTML = `
+                            <span class="hs-class">${cls.name}</span>
+                            No runs yet
+                        `;
+                    }
+
+                    panel.appendChild(row);
+                });
+            },
+
+            /* -----------------------------------------------------
+               NEW RUN INITIALIZATION
+            ------------------------------------------------------ */
+            init() {
+                AudioSys.init();
+                document
+                    .getElementById('modal-start')
+                    .classList.remove('active');
+
+                this.dlvl = 1;
+                this.entities = [];
+                this.particles = [];
+                this.potions = 3;
+                this.maxPotions = 3;
+                this.turn = 0;
+                this.monstersRemaining = 0;
+                this.monstersKilled = 0;
+                this.invincible = false;
+                this.furyScrolls = 0;
+                this.invisScrolls = 0;
+                this.pendingFury = false;
+                this.invisibleTurns = 0;
+                this.backstabReady = false;
+                this.running = true;
+
+                this.generateLevel();
+
+                if (this.player) {
+                    this.player.level = 1;
+                    this.player.xp = 0;
+                    this.player.xpToNext = this.xpToNext(this.player.level);
+                }
+
+                this.updateHUD();
+                this.loop();
+            },
+
+            /* -----------------------------------------------------
+               FLOATING STATUS TEXT ABOVE PLAYER (@)
+               - Warrior: FURY READY
+               - Rogue: INVIS / BACKSTAB
+               - Mage: FIREBALL READY (mana >= 5)
+            ------------------------------------------------------ */
+            drawStatusFloat(ctx) {
+                if (!this.player || !this.running) return;
+
+                const clsId = this.player.classId;
+                let text = '';
+                let color = '#fff';
+                let shadow = '#fff';
+
+                // Decide what to show
+                if (clsId === 'warrior' && this.pendingFury) {
+                    text   = 'FURY READY';
+                    color  = '#ffd700';
+                    shadow = '#ff8800';
+                } else if (clsId === 'rogue' && (this.invisibleTurns > 0 || this.backstabReady)) {
+                    const parts = [];
+                    if (this.invisibleTurns > 0) {
+                        parts.push(`INVIS ${this.invisibleTurns}T`);
+                    }
+                    if (this.backstabReady) {
+                        parts.push('BACKSTAB');
+                    }
+                    text   = parts.join(' • ');
+                    color  = '#bc13fe';
+                    shadow = '#ff00ff';
+                } else if (clsId === 'mage' && this.player.mana >= 5) {
+                    text   = 'FIREBALL READY';
+                    color  = '#ff6600';
+                    shadow = '#ff3300';
+                }
+
+                // Nothing to show
+                if (!text) return;
+
+                // Position: center of player, then bumped up by one tile
+                const px = this.player.displayX * C.tileSize - Render.camera.x + C.tileSize / 2;
+                const py = this.player.displayY * C.tileSize - Render.camera.y - 4; // a little above head
+
+                ctx.save();
+                ctx.font = '10px "Press Start 2P"';
+                ctx.textAlign = 'center';
+                ctx.textBaseline = 'bottom';
+
+                // Glow / outline
+                ctx.shadowBlur = 8;
+                ctx.shadowColor = shadow;
+                ctx.fillStyle = color;
+
+                // Slight dark stroke for readability
+                ctx.strokeStyle = '#000';
+                ctx.lineWidth = 3;
+                ctx.strokeText(text, px, py);
+                ctx.fillText(text, px, py);
+
+                ctx.restore();
+            },
+
+            /* -----------------------------------------------------
+               LEVEL GENERATION (DRUNKARD WALK)
+            ------------------------------------------------------ */
+            generateLevel() {
+                // Fill map with walls
+                this.map = [];
+                for (let y = 0; y < C.mapH; y++) {
+                    const row = [];
+                    for (let x = 0; x < C.mapW; x++) {
+                        row.push({
+                            type: 'wall',
+                            visible: false,
+                            seen: false,
+                            used: false,
+                        });
+                    }
+                    this.map.push(row);
+                }
+
+                // Carve random walk floors
+                let floorCount = 0;
+                const targetFloors = C.mapW * C.mapH * 0.4;
+                let x = Math.floor(C.mapW / 2);
+                let y = Math.floor(C.mapH / 2);
+
+                while (floorCount < targetFloors) {
+                    this.map[y][x].type = 'floor';
+                    floorCount++;
+
+                    const dir = Math.floor(Math.random() * 4);
+                    if (dir === 0 && y > 1) y--;
+                    if (dir === 1 && y < C.mapH - 2) y++;
+                    if (dir === 2 && x > 1) x--;
+                    if (dir === 3 && x < C.mapW - 2) x++;
+                }
+
+                // Player spawn
+                const spawn = this.findEmptySpot();
+                if (!this.player) {
+                    this.player = new Player(
+                        spawn.x,
+                        spawn.y,
+                        this.selectedClass
+                    );
+                } else {
+                    this.player.x = spawn.x;
+                    this.player.y = spawn.y;
+                    this.player.displayX = spawn.x;
+                    this.player.displayY = spawn.y;
+                }
+                if (this.player.classId === 'mage') {
+                    this.player.mageShield = 0;
+                }
+
+                this.entities = [this.player];
+
+                // Monsters
+                const monCount = 5 + this.dlvl * 2;
+                for (let i = 0; i < monCount; i++) {
+                    const p = this.findEmptySpot();
+                    this.entities.push(new Monster(p.x, p.y, this.dlvl));
+                }
+
+                // Stairs
+                const stairs = this.findEmptySpot();
+                this.map[stairs.y][stairs.x].type = 'stairs';
+
+                // Shrine
+                const shrinePos = this.findEmptySpot();
+                this.map[shrinePos.y][shrinePos.x].type = 'shrine';
+                this.map[shrinePos.y][shrinePos.x].used = false;
+
+                // Scrolls
+                let scrollsToPlace = 0;
+                if (Math.random() < 0.6) scrollsToPlace = 1;
+                if (this.dlvl > 4 && Math.random() < 0.3) scrollsToPlace++;
+                for (let i = 0; i < scrollsToPlace; i++) {
+                    const s = this.findEmptySpot();
+                    this.map[s.y][s.x].type = 'scroll';
+                }
+
+                this.monstersRemaining = this.entities.filter(
+                    e => !e.isPlayer
+                ).length;
+
+                this.updateFOV();
+                this.log(
+                    `Sector ${this.dlvl} initialized. ${this.monstersRemaining} hostiles detected.`,
+                    'fresh'
+                );
+                this.updateHUD();
+            },
+
+            /* -----------------------------------------------------
+               FIND A RANDOM EMPTY FLOOR TILE
+            ------------------------------------------------------ */
+            findEmptySpot() {
+                for (;;) {
+                    const x = Math.floor(Math.random() * C.mapW);
+                    const y = Math.floor(Math.random() * C.mapH);
+                    if (this.map[y][x].type === 'floor' && !this.getEntityAt(x, y)) {
+                        return { x, y };
+                    }
+                }
+            },
+
+            /* -----------------------------------------------------
+               ENTITY LOOKUP AT COORD
+            ------------------------------------------------------ */
+            getEntityAt(x, y) {
+                return this.entities.find(
+                    e => e.x === x && e.y === y && !e.dead
+                );
+            },
+
+            /* -----------------------------------------------------
+               PLAYER MOVEMENT + STAIRS + SCROLL PICKUP + END TURN
+            ------------------------------------------------------ */
+            movePlayer(dx, dy) {
+                if (!this.running || this.player.dead) return;
+
+                const nx = this.player.x + dx;
+                const ny = this.player.y + dy;
+
+                if (ny < 0 || ny >= C.mapH || nx < 0 || nx >= C.mapW) return;
+
+                if (this.map[ny][nx].type === 'wall') {
+                    AudioSys.playTone(50, 'square', 0.05);
+                    return;
+                }
+
+                const target = this.getEntityAt(nx, ny);
+                if (target) {
+                    this.combat(this.player, target);
+                    this.endTurn();
+                    return;
+                }
+
+                this.player.x = nx;
+                this.player.y = ny;
+                AudioSys.sfx('step');
+
+                const tile = this.map[ny][nx];
+
+                if (tile.type === 'stairs') {
+                    this.dlvl++;
+                    AudioSys.sfx('magic');
+                    this.generateLevel();
+                    return;
+                }
+
+                if (tile.type === 'scroll') {
+                    this.pickupScroll(tile, nx, ny);
+                }
+
+                this.endTurn();
+            },
+
+            /* -----------------------------------------------------
+               SCROLL PICKUP BEHAVIOR (DIFF BY CLASS)
+            ------------------------------------------------------ */
+            pickupScroll(tile, x, y) {
+                const clsId = this.player.classId;
+                if (clsId === 'warrior') {
+                    this.furyScrolls++;
+                    this.log('You found a Scroll of Fury.', 'gold');
+                } else if (clsId === 'rogue') {
+                    this.invisScrolls++;
+                    this.log('You found a Scroll of Invisibility.', 'gold');
+                } else if (clsId === 'mage') {
+                    this.player.mageShield = 10;
+                    this.log('A Spellshield shimmers around you. (10 HP)', 'gold');
+                }
+                tile.type = 'floor';
+                this.updateHUD();
+            },
+
+            /* -----------------------------------------------------
+               COMBAT RESOLUTION (PLAYER + MONSTERS)
+            ------------------------------------------------------ */
+            combat(atkr, dfdr) {
+                let dmg = Math.max(1, atkr.str);
+
+                if (atkr === this.player) {
+                    // Warrior: Fury
+                    if (this.player.classId === 'warrior' && this.pendingFury) {
+                        dmg += 10;
+                        this.player.hp = Math.min(this.player.maxHp, this.player.hp + 5);
+                        this.pendingFury = false;
+                        this.log('Fury unleashed! +10 dmg, +5 HP.', 'gold');
+                        Render.shake += 5;
+
+                    // Rogue: Backstab from invis
+                    } else if (
+                        this.player.classId === 'rogue' &&
+                        this.backstabReady &&
+                        this.invisibleTurns > 0
+                    ) {
+                        dmg = (this.player.str + 2) * 3;
+                        this.backstabReady = false;
+                        this.invisibleTurns = 0;
+                        this.log('BACKSTAB!', 'gold');
+                        Render.shake += 6;
+
+                    // Normal + crit
+                    } else {
+                        const critChance = this.player.critChance || 0;
+                        if (critChance > 0 && Math.random() < critChance) {
+                            dmg *= 2;
+                            this.spawnParticles(dfdr.x, dfdr.y, 'CRIT!', 'text');
+                            Render.shake += 5;
+                        } else {
+                            Render.shake += 2;
+                        }
+                    }
+                } else {
+                    Render.shake += 2;
+                }
+
+                dfdr.takeDamage(dmg);
+
+                if (dfdr === this.player) {
+                    this.log(`Took ${dmg} dmg!`, 'danger');
+                } else {
+                    this.log(`Hit ${dfdr.name} for ${dmg}.`);
+                }
+            },
+
+            /* -----------------------------------------------------
+               ACTION: ACT BUTTON (INTERACT / ATTACK / STAIRS / SHRINE)
+            ------------------------------------------------------ */
+            actionAct() {
+                if (!this.running || this.player.dead) return;
+
+                const tile = this.map[this.player.y][this.player.x];
+
+                // Stair usage
+                if (tile.type === 'stairs') {
+                    this.dlvl++;
+                    AudioSys.sfx('magic');
+                    this.generateLevel();
+                    this.updateHUD();
+                    return;
+                }
+
+                // Shrine usage
+                if (tile.type === 'shrine') {
+                    this.useShrine(tile);
+                    this.endTurn();
+                    return;
+                }
+
+                // Adjacent attack
+                const dirs = [
+                    { dx: 0, dy: -1 },
+                    { dx: 0, dy: 1 },
+                    { dx: -1, dy: 0 },
+                    { dx: 1, dy: 0 },
+                ];
+
+                for (const d of dirs) {
+                    const t = this.getEntityAt(
+                        this.player.x + d.dx,
+                        this.player.y + d.dy
+                    );
+                    if (t) {
+                        this.combat(this.player, t);
+                        this.endTurn();
+                        return;
+                    }
+                }
+
+                this.log('Nothing to interact with.');
+            },
+
+            /* -----------------------------------------------------
+               SHRINE: REFILL POTIONS ONCE PER FLOOR
+            ------------------------------------------------------ */
+            useShrine(tile) {
+                if (tile.used) {
+                    this.log('The shrine is silent.', 'danger');
+                    return;
+                }
+                tile.used = true;
+                this.potions = this.maxPotions;
+                this.log(
+                    `The shrine restores your potions to ${this.maxPotions}.`,
+                    'gold'
+                );
+                AudioSys.sfx('magic');
+                this.updateHUD();
+            },
+
+            /* -----------------------------------------------------
+               ACTION: OPEN STATS (FROM STATS BTN OR MENU)
+               source param not currently used, but left for clarity.
+            ------------------------------------------------------ */
+            actionInventory(source = 'STATS') {
+                if (!this.running || (this.player && this.player.dead)) return;
+
+                const invBody = document.getElementById('inv-body');
+                const modal = document.getElementById('modal-inv');
+
+                if (!invBody || !modal) {
+                    this.log('Stats UI not available.', 'danger');
+                    return;
+                }
+
+                const p = this.player;
+                const score = this.computeScore();
+                let scrollLine = '';
+                if (p.classId === 'warrior') {
+                    scrollLine = `Fury Scrolls: ${this.furyScrolls}`;
+                } else if (p.classId === 'rogue') {
+                    scrollLine = `Invisibility Scrolls: ${this.invisScrolls}`;
+                } else if (p.classId === 'mage') {
+                    scrollLine = `Spellshield: ${p.mageShield > 0 ? p.mageShield + ' HP' : 'None'}`;
+                }
+
+                invBody.innerHTML = `
+                    CLASS: ${p.name}<br>
+                    DEPTH: ${this.dlvl}<br>
+                    GOLD: ${p.gold}<br>
+                    LEVEL: ${p.level}<br>
+                    XP: ${p.xp}/${p.xpToNext}<br>
+                    HP: ${p.hp}/${p.maxHp}<br>
+                    STR: ${p.str}<br>
+                    CRIT: ${(p.critChance * 100).toFixed(0)}%<br>
+                    MANA: ${p.mana}/${p.maxMana}<br>
+                    POTIONS: ${this.potions}/${this.maxPotions}<br>
+                    MONSTERS KILLED: ${this.monstersKilled}<br>
+                    MONSTERS LEFT THIS FLOOR: ${this.monstersRemaining}<br>
+                    SCORE: ${score}<br><br>
+                    ${scrollLine}
+                `;
+
+                modal.classList.add('active');
+            },
+
+            /* -----------------------------------------------------
+               ACTION: DRINK POTION
+            ------------------------------------------------------ */
+            actionPotion() {
+                if (!this.running || this.player.dead) return;
+
+                if (this.potions <= 0) {
+                    this.log('No potions left.', 'danger');
+                    return;
+                }
+
+                const missing = this.player.maxHp - this.player.hp;
+                if (missing <= 0) {
+                    this.log('You are already at full health.');
+                    return;
+                }
+
+                const heal = Math.min(10, missing);
+                this.player.hp += heal;
+                this.potions--;
+                this.log(
+                    `You drink a potion and recover ${heal} HP. (${this.potions} left)`,
+                    'gold'
+                );
+                this.updateHUD();
+                this.endTurn();
+            },
+
+            /* -----------------------------------------------------
+               MAGE: FIREBALL SPELL
+            ------------------------------------------------------ */
+            castFireball() {
+                if (!this.running || this.player.dead) return;
+
+                if (this.player.classId !== 'mage') {
+                    this.log('Only a mage can cast Fireball.', 'danger');
+                    return;
+                }
+
+                if (this.player.mana < 5) {
+                    this.log('Not enough mana for FIREBALL.', 'danger');
+                    return;
+                }
+
+                this.player.mana -= 5;
+                this.log('You unleash a FIREBALL!', 'gold');
+
+                let hits = 0;
+                this.entities.forEach(e => {
+                    if (e === this.player || e.dead) return;
+
+                    const sx = e.x * C.tileSize - Render.camera.x;
+                    const sy = e.y * C.tileSize - Render.camera.y;
+
+                    if (
+                        sx >= -C.tileSize &&
+                        sy >= -C.tileSize &&
+                        sx <= Render.canvas.width &&
+                        sy <= Render.canvas.height
+                    ) {
+                        e.takeDamage(10);
+                        hits++;
+                    }
+                });
+
+                this.log(
+                    `FIREBALL erupts, hitting ${hits} ${hits === 1 ? 'enemy' : 'enemies'}.`,
+                    hits ? 'gold' : ''
+                );
+                AudioSys.sfx('magic');
+
+                this.updateHUD();
+                this.endTurn();
+            },
+
+            /* -----------------------------------------------------
+               CLASS SPECIAL ACTION (MAGIC / SCROLL)
+            ------------------------------------------------------ */
+            castSpecial() {
+                if (!this.running || this.player.dead) return;
+                const clsId = this.player.classId;
+
+                if (clsId === 'mage') {
+                    this.castFireball();
+                    return;
+                }
+
+                if (clsId === 'warrior') {
+                    if (this.furyScrolls <= 0) {
+                        this.log('No Scrolls of Fury.', 'danger');
+                        return;
+                    }
+                    this.furyScrolls--;
+                    this.pendingFury = true;
+                    this.log('Scroll of Fury read. Next hit is empowered.', 'gold');
+                    this.updateHUD();
+                    return;
+                }
+
+                if (clsId === 'rogue') {
+                    if (this.invisScrolls <= 0) {
+                        this.log('No Scrolls of Invisibility.', 'danger');
+                        return;
+                    }
+                    this.invisScrolls--;
+                    this.invisibleTurns = 3;
+                    this.backstabReady = true;
+                    this.log('You fade into the shadows...', 'gold');
+                    this.updateHUD();
+                    this.endTurn();
+                }
+            },
+
+            /* -----------------------------------------------------
+               DEBUG: INVINCIBILITY TOGGLE
+            ------------------------------------------------------ */
+            toggleInvincible() {
+                this.invincible = !this.invincible;
+
+                const btn = document.getElementById('inv-toggle-btn');
+                if (btn) {
+                    btn.textContent = `INVINCIBLE: ${
+                        this.invincible ? 'ON' : 'OFF'
+                    }`;
+                }
+
+                this.log(
+                    `Invincibility ${this.invincible ? 'ENABLED' : 'DISABLED'}.`,
+                    this.invincible ? 'gold' : ''
+                );
+
+                if (this.invincible) {
+                    Render.shake += 3;
+                    AudioSys.sfx('magic');
+                }
+            },
+
+            /* -----------------------------------------------------
+               MENU / MANUAL / SOUND / EXIT
+            ------------------------------------------------------ */
+            openMenu() {
+                const menu = document.getElementById('modal-menu');
+                if (menu) menu.classList.add('active');
+            },
+
+            closeMenu() {
+                const menu = document.getElementById('modal-menu');
+                if (menu) menu.classList.remove('active');
+            },
+
+            showManual() {
+                const menu = document.getElementById('modal-menu');
+                const man = document.getElementById('modal-manual');
+                if (menu) menu.classList.remove('active');
+                if (man) man.classList.add('active');
+            },
+
+            closeManual() {
+                const man = document.getElementById('modal-manual');
+                if (man) man.classList.remove('active');
+            },
+
+            toggleSound() {
+                AudioSys.muted = !AudioSys.muted;
+                const btn = document.getElementById('sound-toggle-btn');
+                if (btn) {
+                    btn.textContent = `SOUND: ${
+                        AudioSys.muted ? 'OFF' : 'ON'
+                    }`;
+                }
+                this.log(
+                    `Sound ${AudioSys.muted ? 'muted' : 'unmuted'}.`,
+                    'gold'
+                );
+            },
+
+            exitToMain() {
+                location.reload();
+            },
+
+            toggleStats() {
+                const modal = document.getElementById('modal-inv');
+
+                // If stats is already open → close it
+                if (modal.classList.contains('active')) {
+                    modal.classList.remove('active');
+                    return;
+                }
+
+                // Otherwise → open it normally
+                this.actionInventory('STATS');
+            },
+
+            /* -----------------------------------------------------
+               MONSTER DEATH CALLBACK
+            ------------------------------------------------------ */
+            onMonsterKilled(monster) {
+                this.monstersKilled++;
+                if (this.monstersRemaining > 0) {
+                    this.monstersRemaining--;
+                }
+                if (this.monstersRemaining > 0) {
+                    this.log(
+                        `${this.monstersRemaining} monsters left.`,
+                        'gold'
+                    );
+                } else {
+                    this.log(
+                        'All hostiles eliminated on this floor.',
+                        'gold'
+                    );
+                }
+                this.updateHUD();
+            },
+
+            /* -----------------------------------------------------
+               END TURN: MONSTER AI, MANA REGEN, FOV UPDATE
+            ------------------------------------------------------ */
+            endTurn() {
+                this.turn++;
+                this.updateFOV();
+
+                // Invisibility countdown
+                if (this.invisibleTurns > 0) {
+                    this.invisibleTurns--;
+                    if (this.invisibleTurns === 0) {
+                        this.log('You are visible again.', 'danger');
+                    }
+                }
+
+                // Mage mana regen
+                if (this.player && this.player.classId === 'mage') {
+                    if (this.player.mana < this.player.maxMana) {
+                        this.player.mana += 1;
+                    }
+                }
+
+                // Monster movement / attacking
+                this.entities.forEach(e => {
+                    if (e === this.player || e.dead) return;
+
+                    if (this.invisibleTurns > 0) return;
+
+                    const dist =
+                        Math.abs(e.x - this.player.x) +
+                        Math.abs(e.y - this.player.y);
+                    if (dist < 8 && this.map[e.y][e.x].visible) {
+                        const dx = Math.sign(this.player.x - e.x);
+                        const dy = Math.sign(this.player.y - e.y);
+
+                        if (
+                            dx !== 0 &&
+                            this.map[e.y][e.x + dx].type !== 'wall' &&
+                            !this.getEntityAt(e.x + dx, e.y)
+                        ) {
+                            e.x += dx;
+                        } else if (
+                            dy !== 0 &&
+                            this.map[e.y + dy][e.x].type !== 'wall' &&
+                            !this.getEntityAt(e.x, e.y + dy)
+                        ) {
+                            e.y += dy;
+                        } else if (dist === 1) {
+                            this.combat(e, this.player);
+                        }
+                    }
+                });
+
+                this.entities = this.entities.filter(e => !e.dead);
+
+                if (this.player.hp <= 0) {
+                    this.gameOver();
+                }
+
+                this.updateHUD();
+            },
+
+            /* -----------------------------------------------------
+               FIELD OF VIEW (RAYCAST IN 360°)
+            ------------------------------------------------------ */
+            updateFOV() {
+                for (let y = 0; y < C.mapH; y++) {
+                    for (let x = 0; x < C.mapW; x++) {
+                        this.map[y][x].visible = false;
+                    }
+                }
+
+                this.map[this.player.y][this.player.x].visible = true;
+                this.map[this.player.y][this.player.x].seen = true;
+
+                for (let i = 0; i < 360; i += 2) {
+                    let x = this.player.x + 0.5;
+                    let y = this.player.y + 0.5;
+                    const dx = Math.cos(i * 0.01745);
+                    const dy = Math.sin(i * 0.01745);
+
+                    for (let j = 0; j < 10; j++) {
+                        x += dx;
+                        y += dy;
+                        const mx = Math.floor(x);
+                        const my = Math.floor(y);
+                        if (mx < 0 || my < 0 || mx >= C.mapW || my >= C.mapH) {
+                            break;
+                        }
+
+                        this.map[my][mx].visible = true;
+                        this.map[my][mx].seen = true;
+                        if (this.map[my][mx].type === 'wall') break;
+                    }
+                }
+            },
+
+            /* -----------------------------------------------------
+               PARTICLES / LOGGING / SCORING / HUD
+            ------------------------------------------------------ */
+            spawnParticles(x, y, color, type) {
+                const count = type === 'text' ? 1 : 8;
+                for (let i = 0; i < count; i++) {
+                    this.particles.push(new Particle(x, y, color, type));
+                }
+            },
+
+            log(msg, type = '') {
+                const log = document.getElementById('log-container');
+                const el = document.createElement('div');
+                el.className = `log-msg ${type}`;
+                el.classList.add('fresh');
+                el.innerText = `> ${msg}`;
+                log.appendChild(el);
+                while (log.children.length > 3) {
+                    log.removeChild(log.firstChild);
+                }
+                setTimeout(() => el.classList.remove('fresh'), 100);
+            },
+
+            computeScore() {
+                if (!this.player) return 0;
+                return (
+                    this.dlvl * 100 +
+                    this.player.gold * 2 +
+                    this.monstersKilled * 5
+                );
+            },
+
+            updateHUD() {
+                if (!this.player) return;
+
+                document.getElementById('hud-name').innerText =
+                    this.player.name;
+                document.getElementById('hud-hp-text').innerText =
+                    `${this.player.hp}/${this.player.maxHp}`;
+                document.getElementById('hud-hp-bar').style.width =
+                    `${(this.player.hp / this.player.maxHp) * 100}%`;
+                document.getElementById('hud-gold').innerText =
+                    this.player.gold;
+                document.getElementById('hud-dlvl').innerText = this.dlvl;
+                document.getElementById('hud-turn').innerText = this.turn;
+
+                const potEl = document.getElementById('hud-potions');
+                if (potEl) potEl.innerText = this.potions;
+
+                const scrEl = document.getElementById('hud-scrolls');
+                if (scrEl) {
+                    if (this.player.classId === 'warrior') {
+                        scrEl.innerText = this.furyScrolls;
+                    } else if (this.player.classId === 'rogue') {
+                        scrEl.innerText = this.invisScrolls;
+                    } else {
+                        scrEl.innerText = 0;
+                    }
+                }
+
+                const lvlEl = document.getElementById('hud-lvl');
+                if (lvlEl) lvlEl.innerText = this.player.level || 1;
+
+                // Dynamic extra HUD line: MP (mage), STR (warrior), CRIT (rogue)
+                const extraLabel = document.getElementById('hud-extra-label');
+                const extraText  = document.getElementById('hud-extra-text');
+
+                if (extraLabel && extraText) {
+                    const clsId = this.player.classId;
+
+                    if (clsId === 'mage') {
+                        // Mage: just show MP pool
+                        extraLabel.innerText = 'MP';
+                        extraText.innerText = `${this.player.mana}/${this.player.maxMana}`;
+                    } else if (clsId === 'warrior') {
+                        // Warrior: just show STR value
+                        extraLabel.innerText = 'STR';
+                        extraText.innerText = `${this.player.str}`;
+                    } else if (clsId === 'rogue') {
+                        // Rogue: just show CRIT%
+                        extraLabel.innerText = 'CRIT';
+                        const critPercent = Math.round((this.player.critChance || 0) * 100);
+                        extraText.innerText = `${critPercent}%`;
+                    }
+                }
+
+                const xpText = document.getElementById('hud-xp-text');
+                const xpBar = document.getElementById('hud-xp-bar');
+                if (xpText && xpBar) {
+                    xpText.innerText =
+                        `${this.player.xp}/${this.player.xpToNext}`;
+                    const xpPct = Math.min(
+                        1,
+                        this.player.xp / this.player.xpToNext
+                    );
+                    xpBar.style.width = `${xpPct * 100}%`;
+                }
+
+                const scoreEl = document.getElementById('hud-score');
+                const killsEl = document.getElementById('hud-kills');
+                if (scoreEl) scoreEl.innerText = this.computeScore();
+                if (killsEl) killsEl.innerText = this.monstersKilled;
+            },
+
+            /* -----------------------------------------------------
+               HIGHSCORE SAVE + GAME OVER
+            ------------------------------------------------------ */
+            updateHighScore() {
+                if (!this.player) return;
+                const score = this.computeScore();
+                const key = HS_KEY_PREFIX + this.player.classId;
+                const prev = JSON.parse(localStorage.getItem(key) || 'null');
+                const data = {
+                    bestScore: score,
+                    bestDepth: this.dlvl,
+                    bestKills: this.monstersKilled,
+                    bestGold: this.player.gold,
+                };
+                if (!prev || score > prev.bestScore) {
+                    localStorage.setItem(key, JSON.stringify(data));
+                    this.log('New high score!', 'gold');
+                }
+            },
+
+            gameOver() {
+                this.running = false;
+                this.updateHighScore();
+                const score = this.computeScore();
+                document
+                    .getElementById('modal-death')
+                    .classList.add('active');
+                document.getElementById('death-stats').innerHTML = `
+                    CLASS: ${this.player.name}<br>
+                    LEVEL REACHED: ${this.dlvl}<br>
+                    GOLD RECOVERED: ${this.player.gold}<br>
+                    MONSTERS KILLED: ${this.monstersKilled}<br>
+                    SCORE: ${score}
+                `;
+            },
+
+            /* -----------------------------------------------------
+               XP / LEVELING
+            ------------------------------------------------------ */
+            getXPFor(monster) {
+                switch (monster.name) {
+                    case 'Rat':
+                        return 5 + Math.floor(this.dlvl / 2);
+                    case 'Goblin':
+                        return 10 + Math.floor(this.dlvl / 2);
+                    case 'Orc':
+                        return 20 + this.dlvl;
+                    case 'Dragon':
+                        return 50 + this.dlvl * 2;
+                    default:
+                        return 5;
+                }
+            },
+
+            xpToNext(level) {
+                return 20 * level;
+            },
+
+            checkLevelUp() {
+                const p = this.player;
+                if (!p) return;
+
+                while (p.xp >= p.xpToNext) {
+                    p.xp -= p.xpToNext;
+                    p.level++;
+                    p.xpToNext = this.xpToNext(p.level);
+                    this.log(
+                        `LEVEL UP! You are now level ${p.level}.`,
+                        'gold'
+                    );
+                    this.applyLevelGains();
+                }
+                this.updateHUD();
+            },
+
+            applyLevelGains() {
+                const p = this.player;
+                if (!p) return;
+
+                if (p.classId === 'warrior') {
+                    p.str += 1;
+                    this.log('Your strength increases.', 'gold');
+                } else if (p.classId === 'rogue') {
+                    p.critChance = (p.critChance || 0) + 0.05;
+                    this.log(
+                        `Your critical chance rises to ${(p.critChance * 100).toFixed(
+                            0
+                        )}%.`,
+                        'gold'
+                    );
+                } else if (p.classId === 'mage') {
+                    p.maxMana = (p.maxMana || 0) + 1;
+                    p.mana = p.maxMana;
+                    this.log(
+                        `Your maximum mana increases to ${p.maxMana}.`,
+                        'gold'
+                    );
+                }
+
+                if (p.level % 3 === 0 && this.maxPotions < 6) {
+                    this.maxPotions++;
+                    this.log(
+                        `You can now carry ${this.maxPotions} potions.`,
+                        'gold'
+                    );
+                }
+            },
+
+            /* -----------------------------------------------------
+               MAIN GAME LOOP (DRAW EVERYTHING)
+            ------------------------------------------------------ */
+            loop() {
+                if (!this.running) return;
+
+                Render.clear();
+
+                this.entities.forEach(e => e.updateDisplay());
+
+                Render.updateCamera(
+                    this.player.displayX,
+                    this.player.displayY
+                );
+
+                const startCol = Math.floor(Render.camera.x / C.tileSize);
+                const endCol = startCol + C.cols + 1;
+                const startRow = Math.floor(Render.camera.y / C.tileSize);
+                const endRow = startRow + C.rows + 1;
+
+                // Draw tiles
+                for (let y = startRow; y <= endRow; y++) {
+                    for (let x = startCol; x <= endCol; x++) {
+                        if (y >= 0 && y < C.mapH && x >= 0 && x < C.mapW) {
+                            const tile = this.map[y][x];
+                            if (tile.visible) {
+                                if (tile.type === 'wall') {
+                                    Render.drawTile(
+                                        x,
+                                        y,
+                                        '#',
+                                        C.colors.wallLit,
+                                        C.colors.wallLit
+                                    );
+                                } else if (tile.type === 'floor') {
+                                    Render.drawTile(
+                                        x,
+                                        y,
+                                        '.',
+                                        '#333',
+                                        C.colors.floorLit
+                                    );
+                                } else if (tile.type === 'stairs') {
+                                    Render.drawTile(
+                                        x,
+                                        y,
+                                        '>',
+                                        '#fff',
+                                        C.colors.floorLit,
+                                        true
+                                    );
+                                } else if (tile.type === 'shrine') {
+                                    Render.drawTile(
+                                        x,
+                                        y,
+                                        'Ω',
+                                        '#ffd700',
+                                        C.colors.floorLit,
+                                        true
+                                    );
+                                } else if (tile.type === 'scroll') {
+                                    Render.drawTile(
+                                        x,
+                                        y,
+                                        '?',
+                                        '#00ffff',
+                                        C.colors.floorLit,
+                                        true
+                                    );
+                                }
+                            } else if (tile.seen) {
+                                let ch = '.';
+                                if (tile.type === 'wall') ch = '#';
+                                Render.drawTile(
+                                    x,
+                                    y,
+                                    ch,
+                                    '#333',
+                                    C.colors.fog
+                                );
+                            }
+                        }
+                    }
+                }
+
+                // Draw entities
+                this.entities.forEach(e => {
+                    if (this.map[e.y][e.x].visible) {
+                        Render.drawTile(
+                            e.displayX,
+                            e.displayY,
+                            e.char,
+                            e.color,
+                            null,
+                            true
+                        );
+
+                        // Enemy HP bars
+                        if (!e.isPlayer && e.hp < e.maxHp) {
+                            const sx =
+                                e.displayX * C.tileSize - Render.camera.x;
+                            const sy =
+                                e.displayY * C.tileSize - Render.camera.y;
+                            Render.ctx.fillStyle = 'red';
+                            Render.ctx.fillRect(
+                                sx,
+                                sy,
+                                C.tileSize * (e.hp / e.maxHp),
+                                2
+                            );
+                        }
+                    }
+                });
+
+                // Draw particles
+                this.particles.forEach(p => {
+                    p.update();
+                    p.draw(Render.ctx, Render.camera.x, Render.camera.y);
+                });
+                this.particles = this.particles.filter(p => p.life > 0);
+
+                // Radial lighting vignette from player
+                // const px =
+                //     this.player.displayX * C.tileSize -
+                //     Render.camera.x +
+                //     C.tileSize / 2;
+                // const py =
+                //     this.player.displayY * C.tileSize -
+                //     Render.camera.y +
+                //     C.tileSize / 2;
+
+                // const grad = Render.ctx.createRadialGradient(
+                //     px,
+                //     py,
+                //     50,
+                //     px,
+                //     py,
+                //     400
+                // );
+                // grad.addColorStop(0, 'rgba(0,0,0,0)');
+                // grad.addColorStop(1, 'rgba(0,0,0,0.85)');
+                // Render.ctx.fillStyle = grad;
+                // Render.ctx.fillRect(
+                //     0,
+                //     0,
+                //     Render.canvas.width,
+                //     Render.canvas.height
+                // );
+
+                // 🔔 Floating status right above the @
+                this.drawStatusFloat(Render.ctx);
+
+                requestAnimationFrame(() => this.loop());
+            },
+        };
+
+        /* =========================================================
+           INPUT HANDLER (KEYBOARD + MOBILE BUTTONS)
+        ========================================================== */
+        const Input = {
+            handle(action) {
+                if (!Game.running && action !== 'MENU') return;
+
+                switch (action) {
+                    case 'UP':
+                        Game.movePlayer(0, -1);
+                        break;
+                    case 'DOWN':
+                        Game.movePlayer(0, 1);
+                        break;
+                    case 'LEFT':
+                        Game.movePlayer(-1, 0);
+                        break;
+                    case 'RIGHT':
+                        Game.movePlayer(1, 0);
+                        break;
+                    case 'WAIT':
+                        Game.log("You can't just wait anymore.");
+                        break;
+                    case 'ACT':
+                        Game.actionAct();
+                        break;
+                    case 'STATS':
+                        Game.actionInventory('STATS');
+                        break;
+                    case 'MENU':
+                        Game.openMenu();
+                        break;
+                    case 'HEAL':
+                        Game.actionPotion();
+                        break;
+                    case 'MAGIC':
+                        Game.castSpecial();
+                        break;
+                }
+            },
+        };
+
+        /* =========================================================
+           KEYBOARD BINDINGS
+        ========================================================== */
+        window.addEventListener("keydown", e => {
+            if (e.key === "ArrowUp")    Input.handle("UP");
+            if (e.key === "ArrowDown")  Input.handle("DOWN");
+            if (e.key === "ArrowLeft")  Input.handle("LEFT");
+            if (e.key === "ArrowRight") Input.handle("RIGHT");
+
+            if (e.key === ".") Input.handle("WAIT");
+
+            if (e.key === "a" || e.key === "A") Input.handle("ACT");      // attack / interact
+            if (e.key === 'i' || e.key === 'I') Game.toggleStats(); // stats
+            if (e.key === "p" || e.key === "P") Input.handle("HEAL");     // potion
+            if (e.key === "f" || e.key === "F") Input.handle("MAGIC");    // scroll / magic
+            if (e.key === "m" || e.key === "M") Input.handle("MENU");     // menu
+        });
+function requestFullscreen() {
+    const elem = document.documentElement;
+
+    if (elem.requestFullscreen) elem.requestFullscreen();
+    else if (elem.webkitRequestFullscreen) elem.webkitRequestFullscreen();
+    else if (elem.msRequestFullscreen) elem.msRequestFullscreen();
+}
+
+function startGame() {
+    // Try fullscreen, but don't let it kill the game if it fails
+    try {
+        requestFullscreen();
+    } catch (e) {
+        console.warn('Fullscreen request failed:', e);
+    }
+
+    // Make sure canvas fits the new size (especially after fullscreen)
+    Render.resize();
+
+    // Actually start the run
+    Game.init();
+}
+
+
+        /* =========================================================
+           BOOTSTRAP: INITIAL RESIZE + UI SETUP
+        ========================================================== */
+        Render.resize();
+        Game.setupUI();
+
+    </script>
+</body>
+</html>
+
