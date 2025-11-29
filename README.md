@@ -1,132 +1,135 @@
-# mobileEscape# 🔐 Mobile Escape – Phone Puzzle Game
+🌌 NEON ASCENSION
+A Retro Synthwave Roguelike Experience
+NEON ASCENSION is a fast-paced, neon-infused roguelike where you descend through an ever-changing procedural dungeon filled with monsters, scrolls, shrines, and deadly encounters. Built with a retro ASCII aesthetic and synthwave flair, every run challenges you to survive, adapt, and push for a new high score.
+Play directly on mobile or desktop — full touch controls included.
 
-**▶ Play the game now:**  
-https://mobileappkoder.github.io/mobileEscape/
+🎮 Gameplay Overview
+You control a lone hero represented by the @ glyph, navigating a neon dungeon filled with:
+Procedurally generated floors
+Monsters that get stronger with depth
+Treasure, shrines, and magic scrolls
+Turn-based tactical combat
+Class-unique abilities
+Permanent high-score tracking per class
+Every action counts — one wrong move, and the neon fades to black.
 
-Welcome to **Mobile Escape**, a fully interactive, escape-room-style phone simulation built entirely with **HTML, CSS, and JavaScript**.  
-Crack the PIN, outsmart the apps, and dial the secret number before the system locks you out.  
-Your total time becomes the score to beat—good luck!
+🧪 Features
+🔹 Retro ASCII Roguelike Engine
+Drunkard-walk procedural generation
+FOV lighting system
+Pixelated neon tiles rendered on HTML canvas
+Smooth camera movement
+Animated particles, damage numbers, and glows
 
----
+🔹 Three Fully Playable Classes
+Each class has unique mechanics, stats, scrolls, and progression.
+⚔️ Classes
+🛡️ WARRIOR
+High HP and melee power
+Gains +1 STR per level
+Scrolls of Fury empower the next hit (double damage, heal 5 HP)
+HUD shows STR instead of MP
 
-## 📱 Game Overview
+🗡️ ROGUE
+Agile critical-hit specialist
+Gains +5% crit per level
+Scrolls of Invisibility grant 3 turns unseen and a guaranteed Backstab
+HUD shows CRIT%
+Backstab = (STR + 2) × 3
 
-Mobile Escape immerses you in a simulated smartphone OS with three escalating puzzles.  
-Each puzzle flows naturally into the next, with animations, fake UI elements, and a clean mobile interface.
+🔥 MAGE
+Fragile, high-damage caster
+Starts with Fireball (AOE, costs 5 MP)
+Gains +1 max mana per level
+Scrolls grant a 10HP Spellshield
+HUD shows MP
+Fireball damage scales (3 + level × 0.65)
 
-### **Puzzle 1 — PIN Lock**
-- Solve a **4-digit PIN** with logic-based feedback.
-- Correct digits are revealed per-slot across attempts.
-- You cannot delete numbers.
-- Attempts are limited (adjustable in Settings).
-- Once all digits are revealed, the phone unlocks.
+🧩 Dungeon Elements
+🟪 Stairs
+Advance to the next depth and reset the floor.
+🟨 Shrines
+Refill all potions once per floor.
+🟦 Scrolls
+Class-specific magical powerups.
+🟥 Monsters
+Enemies scale by depth and include:
+Rat (r)
+Goblin (g)
+Orc (o)
+Dragon (D)
+Each has unique HP and STR scaling.
 
----
+🎹 Controls
+Keyboard
+Action	Key
+Move	Arrow Keys
+Attack / Interact	A
+Magic / Scroll	F
+Potion	P
+Stats	I (toggle open/close)
+Menu	M
+Pass (no longer allowed)	.
+Mobile Touch Controls
 
-### **Puzzle 2 — App Grid Color Challenge**
-- A grid of app icons (size adjustable in Settings).
-- Pressing any app temporarily shows a hidden color.
-- Choose a color and hit that same color **in a streak**.
-- Reach the streak target (e.g., 5 in a row) without breaking it.
-- Break your streak? Start over — but the color layout never changes.
-- Finish the puzzle before the countdown hits zero!
+Includes a full 3×3 digital D-pad with action buttons:
+MAGIC(F)
+ACT(A)
+MENU(M)
+HEAL(P)
+STATS(I)
 
----
+🏆 Scoring System
+Your score is calculated as:
+Score = Depth × 100 + Gold × 2 + Kills × 5
+Highscores are stored per class using browser local storage and displayed on the title screen.
 
-### **Puzzle 3 — Secret Dialer**
-- A phone dialer UI with numbers, *, #, backspace, and a call button.
-- You must enter a **random 7-digit number** correctly.
-- A hidden timer periodically reveals correct digits.
-- If the final digit needs to be revealed → **game over**.
-- Every correct guess earns **bonus time** (based on your interval setting).
-- When all digits match, the call button activates — tap it to win!
+💀 Game Over
+When HP reaches zero, the run ends.
+Your high score is saved automatically if the run beats your previous record.
 
----
+🖥️ Technical Features
+HTML5 Canvas rendering
+Pure JavaScript engine
+Neon CRT scanline overlay
+Custom synthwave UI
+Persistent localStorage highscores
+Fullscreen support
+Responsive UI for desktop + mobile
+Manual, menu system, stats screen
 
-## ⏱️ Game Timer & Victory
-Your **total time from start to finish** is recorded.
+🚀 How to Run
+Simply open:
+index.html
+Or play directly via GitHub Pages.
+The game is 100% client-side — no backend required.
 
-At the end of a successful run, you’ll see:
-- Your completion time  
-- Your best time (saved in your browser)  
-- A message encouraging you to beat your record next time
+🧩 Favicon
+Includes a custom neon icon designed specifically for this project.
 
----
+To change it:
+<link rel="icon" type="image/png" href="favicon.png">
 
-## ⚙️ Settings Menu
+📁 Repository Structure
+/index.html        Main game (HTML + JS + CSS combined)
+/manifest.json     Progressive Web App settings
+/favicon.png       Custom neon rogue icon
 
-Players can customize:
-- **PIN attempts**  
-- **App grid size (rows / columns)**  
-- **Target streak length**  
-- **Puzzle 2 time limit**  
-- **Puzzle 3 hint interval** (15s, 30s, 45s, 60s)  
-- **Sound effects** (on/off)
+✨ Future Ideas
+Boss floors
+New classes
+More monster types
+Artifact items
+Unlockables
+Alternate dungeon themes
+Music and SFX expansion
 
-Settings allow everything from casual to intense challenge modes.
+❤️ Credits
+Designed, developed, and neon-infused by:
+JB
 
----
+Artwork, animations, and UI enhancements assisted by ChatGPT.
+📜 License
 
-## 🧩 Technology Used
-
-This game is entirely front-end:
-
-- **HTML5** (no external frameworks)
-- **CSS3**  
-  - Animations  
-  - Transitions  
-  - Responsive mobile-first design  
-- **Vanilla JavaScript**  
-  - Full state machine  
-  - Puzzle logic  
-  - UI rendering  
-  - Timers, streak tracking, next-digit logic  
-  - LocalStorage best-time tracking  
-
-No servers, no libraries — completely GitHub Pages compatible.
-
----
-
-## 📦 Project Structure
-/mobileEscape
-│
-├── index.html # Main game interface and screens
-├── style.css # Visual theme, animations, transitions, layout
-└── script.js # Game logic, puzzles, state handling
-
-
-Deploys instantly with GitHub Pages.
-
----
-
-## 🚀 How to Deploy on GitHub Pages
-
-1. Push `index.html`, `style.css`, and `script.js` to any public GitHub repo.  
-2. Go to **Settings → Pages**  
-3. Choose: **Deploy from branch → main → root**  
-4. Your site will appear at:  
-   `https://<username>.github.io/<repository>`  
-
-This project is already live at:  
-▶ https://mobileappkoder.github.io/mobileEscape/
-
----
-
-## 🏆 Future Ideas (Optional Enhancements)
-- Difficulty presets (Easy / Normal / Hard)
-- Achievement badges
-- Sound packs (retro, sci-fi, etc.)
-- More puzzles/screens
-- Daily time challenges
-
----
-
-## 🙌 Credits
-
-Designed, developed, and animated with 💻 + 🎨 + ☕  
-No frameworks, no libraries — **just clean code**.
-
-Enjoy the game, and try to beat your best time!
-
-
-
+You may freely modify and expand this game for personal or educational use.
+Commercial reuse is not permitted without permission from the author.
