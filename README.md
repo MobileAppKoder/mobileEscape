@@ -1,4 +1,5 @@
 🌌 NEON ASCENSION
+
 A Retro Synthwave Roguelike Experience
 NEON ASCENSION is a fast-paced, neon-infused roguelike where you descend through an ever-changing procedural dungeon filled with monsters, scrolls, shrines, and deadly encounters. Built with a retro ASCII aesthetic and synthwave flair, every run challenges you to survive, adapt, and push for a new high score.
 Play directly on mobile or desktop — full touch controls included.
