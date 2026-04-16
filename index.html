@@ -955,7 +955,8 @@ async function analyze(){
     $('chartsPanel').style.display = 'none';
     $('goldfishBtn').style.display = 'none';
     const entries = parseDecklist($('decklist').value);
-    if(entries.length < 10){ alert(`Decklist not detected correctly. Found ${entries.length} card entries.`); return; }
+    const totalEntries = entries.reduce((s,e)=>s + (Number(e.qty)||1), 0);
+    if(totalEntries < 10){ alert(`Decklist not detected correctly. Found ${totalEntries} card entries.`); return; }
 
     setStatus('Fetching deck card data from Scryfall...');
     const cards = await fetchScryfallCards(entries);
@@ -1046,7 +1047,7 @@ ${sim.turns.map(t=>`<div class="card"><h2>Turn ${t.turn}</h2><ul>${t.events.map(
 
 $('analyzeBtn').addEventListener('click', analyze);
 $('goldfishBtn').addEventListener('click', openGoldfishWindow);
-$('sampleBtn').addEventListener('click', ()=>{
+function loadSampleDeck(){
   $('deckName').value = 'Temur Creature Storm';
   $('commander1').value = `Eshki, Temur's Roar`;
   $('commander2').value = '';
@@ -1150,7 +1151,9 @@ $('sampleBtn').addEventListener('click', ()=>{
 1 Xenagos, God of Revels
 1 Zopandrel, Hunger Dominus
 1 Eshki, Temur's Roar`;
-});
+}
+$('sampleBtn').addEventListener('click', loadSampleDeck);
+window.addEventListener('DOMContentLoaded', loadSampleDeck);
 </script>
 </body>
 </html>
