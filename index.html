@@ -1,950 +1,1156 @@
-<!doctype html>
+<!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>EDH Decimal Bracket Rater (Scryfall + Spellbook)</title>
-  <style>
-    :root{
-      --bg:#0b0d10;
-      --panel:#12151b;
-      --panel2:#0f1217;
-      --text:#e8edf2;
-      --muted:#a8b3be;
-      --line:#232a34;
-      --accent:#7dd3fc;
-      --good:#86efac;
-      --warn:#fde68a;
-      --bad:#fca5a5;
-      --mono: ui-monospace, SFMono-Regular, Menlo, Consolas, "Liberation Mono", monospace;
-      --sans: system-ui, -apple-system, Segoe UI, Roboto, Helvetica, Arial, sans-serif;
-      --radius:14px;
-    }
-    html,body{background:var(--bg); color:var(--text); font-family:var(--sans); margin:0;}
-    .wrap{max-width:1100px; margin:24px auto; padding:0 16px 40px;}
-    h1{font-size:22px; margin:0 0 8px;}
-    .sub{color:var(--muted); margin:0 0 18px; line-height:1.4;}
-    .grid{display:grid; grid-template-columns: 1.1fr 0.9fr; gap:14px;}
-    @media (max-width: 980px){ .grid{grid-template-columns:1fr;} }
-    .card{
-      background:linear-gradient(180deg,var(--panel),var(--panel2));
-      border:1px solid var(--line);
-      border-radius:var(--radius);
-      padding:14px;
-      box-shadow: 0 10px 30px rgba(0,0,0,.25);
-    }
-    textarea{
-      width:100%;
-      min-height:320px;
-      resize:vertical;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#0a0c10;
-      color:var(--text);
-      padding:12px;
-      font-family:var(--mono);
-      font-size:13px;
-      line-height:1.35;
-      outline:none;
-    }
-    textarea:focus{border-color:#2b3a4a; box-shadow:0 0 0 3px rgba(125,211,252,.12);}
-    .row{display:flex; gap:10px; align-items:center; flex-wrap:wrap; margin-top:10px;}
-    button{
-      border:1px solid #2b3a4a;
-      background:#0b1320;
-      color:var(--text);
-      padding:10px 14px;
-      border-radius:12px;
-      cursor:pointer;
-      font-weight:600;
-    }
-    button:hover{border-color:#3b5875;}
-    button:disabled{opacity:.6; cursor:not-allowed;}
-    .pill{
-      border:1px solid var(--line);
-      background:#0a0c10;
-      border-radius:999px;
-      padding:6px 10px;
-      color:var(--muted);
-      font-size:12px;
-    }
-    .kpi{display:grid; grid-template-columns: 1fr 1fr; gap:10px;}
-    @media (max-width: 520px){ .kpi{grid-template-columns:1fr;} }
-    .big{
-      font-size:34px;
-      font-weight:800;
-      letter-spacing:-.02em;
-      margin:0;
-    }
-    .big .br{font-size:14px; font-weight:700; color:var(--muted); margin-left:8px;}
-    .meta{color:var(--muted); margin-top:6px; line-height:1.4;}
-    .bar{
-      height:10px; background:#0a0c10; border:1px solid var(--line);
-      border-radius:999px; overflow:hidden;
-    }
-    .bar > div{height:100%; width:0%; background:linear-gradient(90deg,#7dd3fc,#86efac);}
-    table{width:100%; border-collapse:collapse; margin-top:10px;}
-    th,td{border-bottom:1px solid var(--line); padding:8px 6px; text-align:left; font-size:13px;}
-    th{color:var(--muted); font-weight:700;}
-    .muted{color:var(--muted);}
-    .mono{font-family:var(--mono);}
-    .good{color:var(--good);}
-    .warn{color:var(--warn);}
-    .bad{color:var(--bad);}
-    .small{font-size:12px;}
-    .sectionTitle{display:flex; justify-content:space-between; align-items:baseline; gap:10px;}
-    .sectionTitle h3{margin:0; font-size:14px; letter-spacing:.02em; color:#dbe5ef;}
-    details{margin-top:10px;}
-    summary{cursor:pointer; color:var(--accent); font-weight:600;}
-    .twoCol{display:grid; grid-template-columns:1fr 1fr; gap:10px;}
-    @media (max-width: 720px){ .twoCol{grid-template-columns:1fr;} }
-    .inp{
-      width:100%;
-      border-radius:12px;
-      border:1px solid var(--line);
-      background:#0a0c10;
-      color:var(--text);
-      padding:10px 10px;
-      outline:none;
-      font-family:var(--mono);
-      font-size:13px;
-    }
-    .label{font-size:12px; color:var(--muted); margin:8px 0 6px;}
-    .hint{font-size:12px; color:var(--muted); margin-top:6px;}
-    .hr{height:1px; background:var(--line); margin:12px 0;}
-  </style>
+<meta charset="UTF-8" />
+<meta name="viewport" content="width=device-width, initial-scale=1.0" />
+<title>Commander Deck Bracket Rater + Goldfish</title>
+<style>
+:root{
+  --bg:#07111f; --bg2:#0f1b2f; --card:rgba(16,28,48,.92); --line:rgba(255,255,255,.1);
+  --text:#eaf3ff; --muted:#9db0c7; --accent:#7dd3fc; --accent2:#c084fc; --good:#34d399; --warn:#fbbf24; --bad:#fb7185;
+  --shadow:0 18px 50px rgba(0,0,0,.35); --radius:18px;
+}
+*{box-sizing:border-box}
+html,body{margin:0;min-height:100%;font-family:Inter,system-ui,-apple-system,Segoe UI,Roboto,Arial,sans-serif;background:
+radial-gradient(circle at top left, rgba(125,211,252,.18), transparent 30%),
+radial-gradient(circle at top right, rgba(192,132,252,.14), transparent 25%),
+linear-gradient(180deg, #06101d, #0a1220 35%, #08111c 100%); color:var(--text)}
+a{color:var(--accent)}
+.container{width:min(1380px,calc(100% - 32px));margin:0 auto}
+.hero{padding:34px 0 18px}
+h1{font-size:clamp(28px,5vw,52px);margin:10px 0 12px;line-height:1.02}
+.sub{max-width:980px;color:var(--muted);font-size:16px;line-height:1.6}
+.badge{display:inline-flex;gap:8px;align-items:center;border:1px solid var(--line);background:rgba(255,255,255,.04);padding:8px 12px;border-radius:999px;color:var(--muted);font-size:13px}
+.grid{display:grid;grid-template-columns:1.05fr .95fr;gap:18px}
+@media(max-width:1050px){.grid{grid-template-columns:1fr}}
+.panel{background:var(--card);border:1px solid var(--line);border-radius:var(--radius);box-shadow:var(--shadow);padding:18px}
+.panel h2{margin:0 0 14px;font-size:20px}
+.panel h3{margin:16px 0 10px;font-size:15px;color:#d7e6fa}
+textarea,input,select{width:100%;padding:12px 14px;border-radius:14px;border:1px solid rgba(255,255,255,.12);background:#081423;color:var(--text);outline:none}
+textarea{min-height:280px;resize:vertical;font-family:ui-monospace,SFMono-Regular,Consolas,monospace}
+label{display:block;margin:10px 0 6px;color:#d7e6fa;font-size:13px}
+.muted{color:var(--muted)}
+.row{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.row3{display:grid;grid-template-columns:1fr 1fr 1fr;gap:12px}
+.row4{display:grid;grid-template-columns:repeat(4,1fr);gap:12px}
+@media(max-width:900px){.row3,.row4{grid-template-columns:1fr 1fr}}
+@media(max-width:760px){.row,.row3,.row4{grid-template-columns:1fr}}
+button{appearance:none;border:0;border-radius:14px;padding:12px 16px;background:linear-gradient(135deg,var(--accent),var(--accent2));color:#06101d;font-weight:800;cursor:pointer}
+button.secondary{background:rgba(255,255,255,.06);color:var(--text);border:1px solid var(--line)}
+button.ghost{background:transparent;color:var(--text);border:1px solid var(--line)}
+.toolbar{display:flex;gap:10px;flex-wrap:wrap;margin-top:14px}
+.note{margin-top:10px;color:var(--muted);font-size:13px;line-height:1.55}
+.kpis{display:grid;grid-template-columns:repeat(4,1fr);gap:12px;margin-top:12px}
+@media(max-width:900px){.kpis{grid-template-columns:repeat(2,1fr)}}
+@media(max-width:760px){.kpis{grid-template-columns:1fr}}
+.kpi{padding:14px;border:1px solid var(--line);background:rgba(255,255,255,.03);border-radius:16px}
+.kpi .label{font-size:12px;color:var(--muted);margin-bottom:6px}
+.kpi .value{font-size:28px;font-weight:800}
+.result-band{display:flex;justify-content:space-between;gap:12px;align-items:center;flex-wrap:wrap;margin-top:12px;padding:16px;border-radius:18px;background:linear-gradient(135deg,rgba(125,211,252,.14),rgba(192,132,252,.12));border:1px solid var(--line)}
+.score-pill{font-size:36px;font-weight:900}
+.small{font-size:12px;color:var(--muted)}
+.cards-grid{display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin-top:14px}
+@media(max-width:760px){.cards-grid{grid-template-columns:1fr}}
+.stat-box{border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.03)}
+.stat-box h4{margin:0 0 8px;font-size:14px}
+.list{display:flex;flex-direction:column;gap:8px}
+.item{display:flex;justify-content:space-between;gap:10px;padding:8px 10px;background:rgba(255,255,255,.03);border:1px solid rgba(255,255,255,.06);border-radius:12px}
+.item .name{font-weight:600}
+.slider-row{display:grid;grid-template-columns:170px 1fr 50px 1.4fr;gap:12px;align-items:center;margin:8px 0}
+.score-help{color:#ffd166;font-weight:700}
+input[type=range]{padding:0}
+.good{color:var(--good)} .warn{color:var(--warn)} .bad{color:var(--bad)}
+.summary{white-space:pre-wrap;line-height:1.6}
+.table{width:100%;border-collapse:collapse;font-size:14px}
+.table th,.table td{padding:8px;border-bottom:1px solid rgba(255,255,255,.08);text-align:left;vertical-align:top}
+.flex{display:flex;gap:10px;flex-wrap:wrap}
+.tag{padding:6px 10px;border-radius:999px;background:rgba(255,255,255,.06);border:1px solid var(--line);font-size:12px}
+.toggle-box{display:flex;align-items:center;gap:10px;padding:10px 12px;border:1px solid var(--line);border-radius:14px;background:rgba(255,255,255,.03)}
+.toggle-box input[type=checkbox]{width:auto;transform:scale(1.2)}
+.inline-field{display:grid;grid-template-columns:auto 90px;gap:10px;align-items:center}
+.chart-grid{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:16px}
+@media(max-width:900px){.chart-grid{grid-template-columns:1fr}}
+.chart-card{border:1px solid var(--line);border-radius:16px;padding:14px;background:rgba(255,255,255,.03)}
+.chart-card h4{margin:0 0 8px;font-size:14px}
+canvas{width:100%;height:280px;background:rgba(0,0,0,.12);border-radius:12px}
+footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
+</style>
 </head>
 <body>
-  <div class="wrap">
-    <h1>EDH Decimal Bracket Rater</h1>
-    <p class="sub">
-      Paste a decklist (e.g., <span class="mono">1 Card Name</span> per line). This page fetches card data from Scryfall, classifies tutors / interaction / combos / “game changers” / salt,
-      assigns a <span class="mono">WotC-like bracket</span>, then outputs a <span class="mono">decimal rating</span>.
-      <br><span class="small muted">Combo DB: uses Commander Spellbook (estimate-bracket) via your local proxy to avoid CORS.</span>
-    </p>
-
-    <div class="grid">
-      <div class="card">
-        <div class="sectionTitle">
-          <h3>Decklist input</h3>
-          <span class="pill mono" id="uniqueCount">0 unique</span>
-        </div>
-
-        <textarea id="deck" placeholder="Paste decklist here..."></textarea>
-
-        <div class="row">
-          <button id="rateBtn" type="button">Rate deck</button>
-          <button id="loadExampleBtn" type="button">Load sample</button>
-          <span class="pill" id="status">Idle.</span>
-        </div>
-
-        <details>
-          <summary>Advanced: Spellbook combo auto-lists + Salt map</summary>
-          <p class="hint">
-            Commander Spellbook “estimate-bracket” returns bracket-relevant info (including 2-card combos).
-            We fetch through <span class="mono">/api/spellbook/estimate-bracket</span> (your local server) to avoid browser CORS.
-          </p>
-
-          <div class="row" style="margin-top:10px;">
-            <button id="refreshSpellbookCombosBtn" type="button">Auto-fetch combos from Commander Spellbook (estimate-bracket)</button>
-            <span class="pill" id="spellbookStatus">Spellbook combos: not loaded</span>
-          </div>
-
-          <div class="twoCol">
-            <div>
-              <div class="label">Early-game 2-card combos (Card A | Card B)</div>
-              <textarea id="earlyTwoCardCombos" class="inp" style="min-height:140px;"></textarea>
-            </div>
-            <div>
-              <div class="label">Late-game 2-card combos (Card A | Card B)</div>
-              <textarea id="lateTwoCardCombos" class="inp" style="min-height:140px;"></textarea>
-            </div>
-          </div>
-
-          <div class="hint">
-            Your deck “has a combo” only when <b>both</b> cards in a pair appear in your deck.
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="twoCol">
-            <div>
-              <div class="label">Early infinite threshold (max total CMC of combo pieces)</div>
-              <input id="earlyComboCmc" class="inp" type="number" min="2" max="12" value="6"/>
-              <div class="hint">If a known 2-card combo’s combined CMC ≤ this, it counts as “early-game infinite”.</div>
-            </div>
-            <div>
-              <div class="label">Tutor ramp exclusion</div>
-              <select id="excludeLandRampFromTutors" class="inp" style="font-family:var(--sans);">
-                <option value="yes" selected>Exclude land-ramp “search basic land” from tutors</option>
-                <option value="no">Count all “search your library” as tutors</option>
-              </select>
-              <div class="hint">Treats Rampant Growth effects differently than Demonic Tutor effects.</div>
-            </div>
-          </div>
-
-          <div class="hr"></div>
-
-          <div class="twoCol">
-            <div>
-              <div class="label">Game Changers (one card name per line)</div>
-              <textarea id="gameChangers" class="inp" style="min-height:140px;"></textarea>
-              <div class="hint">Paste your own list here if you want. (No EDHREC auto-fetch in this build.)</div>
-            </div>
-            <div>
-              <div class="label">Salt Map (one per line: Card Name = points)</div>
-              <textarea id="saltMap" class="inp" style="min-height:140px;"></textarea>
-            </div>
-          </div>
-        </details>
-      </div>
-
-      <div class="card">
-        <div class="sectionTitle">
-          <h3>Result</h3>
-          <span class="pill mono" id="cardsFetched">0 cards fetched</span>
-        </div>
-
-        <p class="big" id="finalRating">
-          — <span class="br" id="finalBracket">Bracket —</span>
-        </p>
-
-        <div class="meta" id="finalMeta">Paste a list and click Rate.</div>
-
-        <div class="hr"></div>
-
-        <div class="kpi">
-          <div>
-            <div class="label">Observed “kicks off” turn (engine online)</div>
-            <input id="kickoffTurn" type="range" min="2" max="12" value="8" />
-            <div class="hint">Turn: <span class="mono" id="kickoffVal">8</span> (≤3 often plays like bracket 4+)</div>
-          </div>
-          <div>
-            <div class="label">Resilience (rebuild after wipe)</div>
-            <input id="resilience" type="range" min="1" max="3" value="2" />
-            <div class="hint"><span class="mono" id="resVal">2</span> (1 weak · 2 medium · 3 strong)</div>
-          </div>
-        </div>
-
-        <div class="hr"></div>
-
-        <div class="label">Score /100</div>
-        <div class="bar"><div id="scoreBar"></div></div>
-        <div class="hint" id="scoreLine">—</div>
-
-        <table id="breakdown"></table>
-
-        <details>
-          <summary>See detected cards (game changers, combos found, tutors, interaction, salt)</summary>
-          <div id="detectedLists" class="small"></div>
-        </details>
-      </div>
+<div class="container">
+  <section class="hero">
+    <div class="badge">⚔️ Commander Deck Analyzer • paste-only decklists</div>
+    <h1>Bracket decimal scoring + 100-game goldfish simulator</h1>
+    <div class="sub">
+      Paste a Commander decklist, add commander metadata, then analyze it with your bracket-decimal system, a Karsten land suggestion,
+      and a 100-game heuristic goldfish. This is a static browser app using public Scryfall data.
     </div>
+  </section>
+
+  <div class="grid">
+    <section class="panel">
+      <h2>Deck input</h2>
+      <label for="decklist">Decklist</label>
+      <textarea id="decklist" spellcheck="false" placeholder="Paste decklist here, one card per line. Example:
+1 Sol Ring
+1 Arcane Signet
+1 Command Tower
+1 Swords to Plowshares"></textarea>
+
+      <div class="row">
+        <div>
+          <label for="commander1">Commander</label>
+          <input id="commander1" placeholder="Atraxa, Praetors' Voice" />
+        </div>
+        <div>
+          <label for="commander2">Partner / second commander</label>
+          <input id="commander2" placeholder="optional" />
+        </div>
+      </div>
+
+      <div class="row">
+        <div>
+          <label for="deckName">Deck name</label>
+          <input id="deckName" placeholder="My Commander Deck" />
+        </div>
+        <div>
+          <label for="goldfishRuns">Goldfish runs on Analyze Deck</label>
+          <input id="goldfishRuns" type="number" min="10" max="500" value="100" />
+        </div>
+      </div>
+
+      <h3>Opening hand / mulligan preferences</h3>
+      <div class="row4">
+        <div class="toggle-box inline-field"><label for="toggleLands" style="margin:0">Use land range</label><input id="toggleLands" type="checkbox" checked></div>
+        <div><label>Min lands</label><input id="minLands" type="number" min="0" max="7" value="2" /></div>
+        <div><label>Max lands</label><input id="maxLands" type="number" min="0" max="7" value="5" /></div>
+        <div><label>Simulation turns</label><input id="simTurns" type="number" min="20" max="20" value="20" readonly /></div>
+      </div>
+      <div class="row4">
+        <div class="toggle-box inline-field"><label for="toggleRamp" style="margin:0">Require ramp</label><input id="toggleRamp" type="checkbox" checked></div>
+        <div><label>Min ramp in opener</label><input id="minRampOpen" type="number" min="0" max="7" value="1" /></div>
+        <div class="toggle-box inline-field"><label for="toggleDraw" style="margin:0">Require draw</label><input id="toggleDraw" type="checkbox"></div>
+        <div><label>Min draw in opener</label><input id="minDrawOpen" type="number" min="0" max="7" value="1" /></div>
+      </div>
+      <div class="row4">
+        <div class="toggle-box inline-field"><label for="toggleProtect" style="margin:0">Require protection</label><input id="toggleProtect" type="checkbox"></div>
+        <div><label>Min protection in opener</label><input id="minProtectOpen" type="number" min="0" max="7" value="1" /></div>
+        <div class="toggle-box inline-field"><label for="toggleRemoval" style="margin:0">Require removal</label><input id="toggleRemoval" type="checkbox"></div>
+        <div><label>Min removal in opener</label><input id="minRemovalOpen" type="number" min="0" max="7" value="1" /></div>
+      </div>
+      <div class="note">The mulligan engine gives one free 7-card mulligan, then redraws to 6, 5, 4... and must keep at 1. Toggles decide which requirements are enforced.</div>
+
+      <h3>Benchmarks used for timing checks</h3>
+      <div class="row4">
+        <div><label>Turn 1: 1-drop rock</label><input id="bmRock1" type="number" min="0" max="40" value="16" /></div>
+        <div><label>Turn 2: ramp</label><input id="bmRamp2" type="number" min="0" max="40" value="14" /></div>
+        <div><label>Turn 3: draw</label><input id="bmDraw3" type="number" min="0" max="40" value="12" /></div>
+        <div><label>Turn 4: lands</label><input id="bmLands4" type="number" min="0" max="60" value="41" /></div>
+      </div>
+      <div class="row4">
+        <div><label>Turn 6: removal</label><input id="bmRemoval6" type="number" min="0" max="40" value="10" /></div>
+        <div><label>Turn 7: synergy</label><input id="bmSynergy7" type="number" min="0" max="60" value="30" /></div>
+        <div><label>Turn 8: finisher</label><input id="bmFinisher8" type="number" min="0" max="20" value="5" /></div>
+        <div><label>Land formula override</label><input id="karstenOverride" type="number" min="0" max="60" placeholder="optional" /></div>
+      </div>
+
+      <div class="toolbar">
+        <button id="analyzeBtn">Analyze deck</button>
+        <button class="secondary" id="sampleBtn">Load sample deck</button>
+        <button class="ghost" id="goldfishBtn" style="display:none">Run single goldfish now</button>
+      </div>
+      <div id="status" class="note">Ready.</div>
+    </section>
+
+    <section class="panel">
+      <h2>Results</h2>
+      <div id="resultBand" class="result-band" style="display:none">
+        <div>
+          <div class="small">Bracket decimal rating</div>
+          <div id="bracketScore" class="score-pill">—</div>
+          <div id="bracketLabel" class="muted">Paste a decklist and click Analyze deck.</div>
+        </div>
+        <div class="small" id="totalScoreText">Total category score: — / 35</div>
+      </div>
+
+      <div class="kpis">
+        <div class="kpi"><div class="label">Cards parsed</div><div id="kpiCards" class="value">0</div></div>
+        <div class="kpi"><div class="label">Nonlands</div><div id="kpiNonlands" class="value">0</div></div>
+        <div class="kpi"><div class="label">Lands</div><div id="kpiLands" class="value">0</div></div>
+        <div class="kpi"><div class="label">Karsten land suggestion</div><div id="kpiKarsten" class="value">—</div></div>
+      </div>
+
+      <div class="cards-grid">
+        <div class="stat-box">
+          <h4>Role counts</h4>
+          <div class="list" id="roleCounts"></div>
+        </div>
+        <div class="stat-box">
+          <h4>Commander support check</h4>
+          <div id="commandFit" class="summary muted">Waiting for deck analysis.</div>
+        </div>
+      </div>
+
+      <div class="stat-box" style="margin-top:14px">
+        <h4>Auto category scores</h4>
+        <div id="sliders"></div>
+      </div>
+
+      <div class="stat-box" style="margin-top:14px">
+        <h4>Reasoning</h4>
+        <div id="summary" class="summary muted">No analysis yet.</div>
+      </div>
+
+      <div class="stat-box" style="margin-top:14px">
+        <h4>Benchmark check</h4>
+        <div id="benchmarks"></div>
+      </div>
+    </section>
   </div>
 
+  <section class="panel" id="chartsPanel" style="margin-top:18px;display:none">
+    <h2>100-game goldfish summary</h2>
+    <div id="runSummary" class="summary muted"></div>
+    <div class="chart-grid">
+      <div class="chart-card"><h4>Mulligan kept hand size distribution</h4><canvas id="chartMulligans" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Commander cast turn distribution</h4><canvas id="chartCommander" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Probable win / overwhelm turn distribution</h4><div class="muted" style="margin-bottom:8px;font-size:12px">Turns 1–20 are shown. This metric is tracked every turn.</div><canvas id="chartWins" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Benchmark hit rates across runs</h4><canvas id="chartBenchmarks" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Ramp hit turns</h4><canvas id="chartRampTurns" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Draw hit turns</h4><canvas id="chartDrawTurns" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Removal hit turns</h4><canvas id="chartRemovalTurns" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Protection hit turns</h4><canvas id="chartProtectionTurns" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Average utility in hand by turn</h4><canvas id="chartUtilityHand" width="600" height="280"></canvas></div>
+      <div class="chart-card"><h4>Average utility on battlefield by turn</h4><canvas id="chartUtilityBattlefield" width="600" height="280"></canvas></div>
+    </div>
+  </section>
+
+  <section class="panel" style="margin-top:18px">
+    <h2>Detected card buckets</h2>
+    <div class="row">
+      <div><h3>Ramp / rocks / dorks</h3><div id="listRamp"></div></div>
+      <div><h3>Draw / advantage</h3><div id="listDraw"></div></div>
+    </div>
+    <div class="row">
+      <div><h3>Removal / wipes</h3><div id="listRemoval"></div></div>
+      <div><h3>Protection / recursion / finishers</h3><div id="listMisc"></div></div>
+    </div>
+  </section>
+
+  <footer>
+    Uses public Scryfall card data. The goldfish and win timing are intentionally heuristic rather than rules-perfect MTG.
+  </footer>
+</div>
+
 <script>
-/* =========================
-   Globals + helpers
-   ========================= */
-const SCRY_COLLECTION = "https://api.scryfall.com/cards/collection";
+const categoryNames = [
+  "Mana Speed","Card Advantage and Consistency","Interaction",
+  "Commander Dependence","Win Speed","Win Quality","Resilience"
+];
+const categoryDescriptions = {
+  0:['Very slow, clunky, low ramp','A little ramp, but often behind','Normal casual ramp package','Good ramp, reliable acceleration','Fast starts often, efficient mana base','Fast mana, explosive starts, often ahead immediately'],
+  1:['Runs out of cards constantly','A little draw, inconsistent','Normal casual draw','Strong draw engines, good hand flow','Excellent draw, selection, recursion, filtering','Top-tier consistency: tutors plus draw plus redundancy'],
+  2:['Barely any removal','A few answers, often too late','Normal casual removal count','Good interaction spread','Efficient answers and real stack interaction','High interaction density, cheap answers, can stop multiple lines'],
+  3:['Deck barely works without commander','Major collapse without commander','Commander is very important','Deck is better with commander but still works','Commander is strong, but shell is independently powerful','Commander is excellent, but the deck hardly needs it'],
+  4:['Turn 12+ usually','Turn 10–12 usually','Turn 8–10 usually','Turn 6–9 reliably','Turn 4–7 often','Turn 3–5 realistic and repeatable'],
+  5:['No clear win plan','Wins by random combat eventually','Has a clear plan but slow or fragile','Strong finishers or good synergy kills','Compact or highly reliable win lines','Deterministic combo or extremely hard-to-stop win engine'],
+  6:['One wipe and it is done','Struggles badly after interaction','Some rebuild potential','Good recursion, draw, or redundancy','Strong protection and recovery','Very hard to stop permanently']
+};
+
+let current = {
+  parsed: [], cardMap: new Map(), commanders: [], analysis: null, batch: null
+};
+const FULL_SIM_TURNS = 20;
+const SHORT_TURN_VIEW = 10;
 
 function $(id){ return document.getElementById(id); }
-function must(id){
-  const el = document.getElementById(id);
-  if(!el) throw new Error(`Missing element id="${id}" in HTML`);
-  return el;
-}
-function setStatus(msg){ $("status").textContent = msg; }
-function clamp(n,min,max){ return Math.max(min, Math.min(max,n)); }
-function chunk(arr, n){ const out=[]; for(let i=0;i<arr.length;i+=n) out.push(arr.slice(i,i+n)); return out; }
-
-function decodeHtmlEntities(str){
-  const txt = document.createElement("textarea");
-  txt.innerHTML = str;
-  return txt.value;
-}
-
-function normalizeName(s){
-  return decodeHtmlEntities(String(s || ""))
-    .replace(/\u2019/g, "'")
-    .replace(/\s+/g, " ")
-    .trim();
-}
-
-function listHtml(title, items){
-  if(!items || !items.length) return `<div class="muted"><b>${title}:</b> none</div>`;
-  const safe = items.map(s => String(s).replace(/</g,"&lt;").replace(/>/g,"&gt;"));
-  return `<div><b>${title}:</b> <span class="mono">${safe.join(", ")}</span></div>`;
-}
-
-function pointsLabel(v, max){
-  const pct = Math.round((v/max)*100);
-  let cls = "muted";
-  if(pct >= 70) cls = "good";
-  else if(pct >= 45) cls = "warn";
-  else cls = "bad";
-  return `<span class="${cls}">${v}/${max}</span>`;
-}
+function escapeHtml(s=''){ return s.replace(/[&<>"']/g, c => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c])); }
+function sleep(ms){ return new Promise(r => setTimeout(r, ms)); }
+function setStatus(msg, good=false){ const el=$('status'); el.textContent=msg; el.className='note ' + (good ? 'good' : ''); }
 
 function parseDecklist(text){
-  const lines = text.split("\n").map(l => l.trim()).filter(Boolean);
+  const rawLines = text.split(/\r?\n/);
   const entries = [];
-  for(const line of lines){
-    const m = line.match(/^(\d+)\s+(.+)$/);
-    const qty = m ? parseInt(m[1],10) : 1;
-    const name = normalizeName(m ? m[2] : line);
+  const headerOnly = /^(deck|mainboard|sideboard|maybeboard|commander|commanders|creatures|instants|sorceries|artifacts|enchantments|battles|planeswalkers|lands|tokens|considering|maybe board|acquireboard|wishboard)$/i;
+
+  for(let line of rawLines){
+    if(!line) continue;
+    line = line.trim();
+    if(!line) continue;
+    if(headerOnly.test(line)) continue;
+    if(/^#+\s*/.test(line)) line = line.replace(/^#+\s*/,'').trim();
+    line = line.replace(/^[\-*•]\s+/,'').replace(/^\d+\.\s+/,'').trim();
+    line = line.replace(/\s{2,}[-–—].*$/,'').trim();
+    line = line.replace(/^(commander|partner)\s*:\s*/i,'').trim();
+
+    let qty = 1;
+    let name = line;
+    let m = line.match(/^(\d+)\s*x?\s+(.+?)$/i);
+    if(m){
+      qty = parseInt(m[1],10);
+      name = m[2].trim();
+    }else{
+      m = line.match(/^(.+?)\s+x\s*(\d+)$/i) || line.match(/^(.+?)\s+(\d+)x$/i);
+      if(m){ name = m[1].trim(); qty = parseInt(m[2],10); }
+    }
+
+    name = name
+      .replace(/\s+\[[^\]]+\]\s*$/,'')
+      .replace(/\s+\((?:[A-Z0-9]{2,}|[A-Za-z]+)\)\s*$/,'')
+      .replace(/\s+\d+\s*$/,'')
+      .trim();
+
     if(!name) continue;
-    entries.push({ qty, name });
+    if(/^(total cards?|avg\.? mana value|average mana value|deck price|buy deck|export|playtest)$/i.test(name)) continue;
+    if(/^\d+\s+cards?$/i.test(name)) continue;
+    if(/^[A-Za-z ]+:?$/.test(name) && headerOnly.test(name.replace(/:$/,''))) continue;
+    if(name.length < 2) continue;
+
+    entries.push({qty: Number.isFinite(qty) && qty > 0 ? qty : 1, name});
   }
-  const map = new Map();
-  for(const e of entries) map.set(e.name, (map.get(e.name)||0) + e.qty);
-  const unique = [...map.entries()].map(([name, qty]) => ({ name, qty }));
-  return { unique, totalCards: entries.reduce((a,e)=>a+e.qty,0) };
+  return entries;
 }
 
-function updateUniqueCount(){
-  const { unique } = parseDecklist($("deck").value);
-  $("uniqueCount").textContent = `${unique.length} unique`;
-}
-$("deck").addEventListener("input", updateUniqueCount);
+async function fetchScryfallCards(entries){
+  const names = [];
+  for(const e of entries) for(let i=0;i<e.qty;i++) names.push(e.name);
+  const unique = [...new Set(names)];
+  const byName = new Map();
 
-/* =========================
-   Scryfall fetch
-   ========================= */
-async function fetchCardFuzzy(name){
-  const url = `https://api.scryfall.com/cards/named?fuzzy=${encodeURIComponent(name)}`;
-  const resp = await fetch(url);
-  if(!resp.ok) throw new Error(`Fuzzy lookup failed for: ${name}`);
-  return await resp.json();
-}
-
-async function fetchScryfallCards(uniqueCards){
-  const identifiers = uniqueCards.map(c => ({ name: c.name }));
-  const batches = chunk(identifiers, 75);
-  const out = [];
-  const missing = [];
-
-  for(const batch of batches){
-    const resp = await fetch(SCRY_COLLECTION, {
-      method: "POST",
-      headers: { "Content-Type":"application/json" },
-      body: JSON.stringify({ identifiers: batch })
+  for(let i=0;i<unique.length;i+=75){
+    const chunk = unique.slice(i,i+75);
+    const payload = { identifiers: chunk.map(name => ({ name })) };
+    const res = await fetch('https://api.scryfall.com/cards/collection', {
+      method:'POST', headers:{'Content-Type':'application/json'}, body:JSON.stringify(payload)
     });
-    if(!resp.ok) throw new Error(`Scryfall request failed (${resp.status})`);
-    const data = await resp.json();
-    out.push(...(data.data || []));
-    if(Array.isArray(data.not_found)){
-      for(const nf of data.not_found){
-        if(nf && nf.name) missing.push(normalizeName(nf.name));
+    if(res.ok){
+      const data = await res.json();
+      for(const card of (data.data||[])) byName.set(card.name.toLowerCase(), card);
+      const notFound = data.not_found || [];
+      for(const miss of notFound){
+        try{
+          await sleep(35);
+          const r2 = await fetch('https://api.scryfall.com/cards/named?fuzzy=' + encodeURIComponent(miss.name));
+          if(r2.ok){
+            const card = await r2.json();
+            byName.set(miss.name.toLowerCase(), card);
+          }
+        }catch(e){}
       }
     }
   }
 
-  for(const name of missing){
-    try{
-      const card = await fetchCardFuzzy(name);
-      out.push(card);
-    }catch(_){
-      console.warn("Still not found:", name);
+  const cards = [];
+  for(const e of entries){
+    for(let i=0;i<e.qty;i++){
+      const c = byName.get(e.name.toLowerCase());
+      cards.push(c ? normalizeCard(c) : fallbackCard(e.name));
     }
   }
-
-  return out;
+  return cards;
 }
 
-/* =========================
-   Spellbook (via local proxy)
-   ========================= */
+function fallbackCard(name){
+  return { name, cmc: 0, colors: [], color_identity: [], type_line: '', oracle_text: '', produced_mana: [], tags: {}, mana_cost: '' };
+}
 
-// local proxy (server.js) => backend.commanderspellbook.com/estimate-bracket
-async function postJson(url, payload){
-  const resp = await fetch(url, {
-    method: "POST",
-    headers: { "Content-Type":"application/json" },
-    body: JSON.stringify(payload)
+function normalizeCard(c){
+  const faces = c.card_faces || [];
+  const type_line = c.type_line || faces.map(f=>f.type_line).filter(Boolean).join(' // ');
+  const oracle_text = c.oracle_text || faces.map(f=>f.oracle_text).filter(Boolean).join('\n');
+  const mana_cost = c.mana_cost || faces.map(f=>f.mana_cost).filter(Boolean)[0] || '';
+  return {
+    name: c.name,
+    cmc: c.cmc || 0,
+    colors: c.colors || [],
+    color_identity: c.color_identity || [],
+    type_line,
+    oracle_text,
+    mana_cost,
+    produced_mana: c.produced_mana || [],
+    keywords: c.keywords || [],
+    tags: classifyCard({
+      name:c.name, cmc:c.cmc||0, type_line, oracle_text, mana_cost, colors:c.colors||[], color_identity:c.color_identity||[],
+      produced_mana:c.produced_mana||[], keywords:c.keywords||[]
+    })
+  };
+}
+
+function classifyCard(card){
+  const text = (card.oracle_text || '').toLowerCase();
+  const type = (card.type_line || '').toLowerCase();
+  const isLand = type.includes('land');
+  const isCreature = type.includes('creature');
+  const isArtifact = type.includes('artifact');
+  const tags = {
+    land:isLand, ramp:false, draw:false, removal:false, wipe:false, protection:false, recursion:false,
+    finisher:false, synergy:false, rock1:false, tutor:false, counter:false
+  };
+
+  const manaAbility = /add\s+\{[wubrgc]\}|\badd one mana\b|\badd two mana\b|\badd [a-z]+ mana\b/i.test(text);
+  const searchesLand = /search your library for a basic land|search your library for up to .* land|put a land card from your library onto the battlefield/i.test(text);
+  const costReductionRamp = /costs? \{?1\}? less|treasure token|create .* treasure/i.test(text);
+  if(!isLand && (manaAbility || searchesLand || costReductionRamp)) tags.ramp = true;
+  if((isArtifact || isCreature) && card.cmc <= 1 && manaAbility) tags.rock1 = true;
+
+  if(/\bdraw [a-z0-9x]+ card|\bdraw a card|\bdraw two cards|\bwhenever .* draw\b|\bconnive\b|\binvestigate\b|\bimpulse\b|\blook at the top .* put .* into your hand/i.test(text) ||
+     /\bcycling\b|\bcantrip\b/i.test(text)) tags.draw = true;
+
+  if(/\bdestroy target\b|\bexile target\b|\breturn target .* to .* hand\b|\bcounter target\b|\bfight target\b|\beach opponent sacrifices\b|\btarget creature gets -[0-9x]/i.test(text)) tags.removal = true;
+  if(/\bdestroy all\b|\bexile all\b|\beach creature\b.*dies|\bwrath\b|\bboard wipe\b|\beach player sacrifices all/i.test(text)) { tags.wipe = true; tags.removal = true; }
+  if(/\bcounter target\b/.test(text)) { tags.counter = true; tags.removal = true; }
+
+  if(/\bhexproof\b|\bindestructible\b|\bprotection from\b|\bphase out\b|\bward\b|\bcan'?t be the target\b|\bprevent all damage\b|\byour permanents gain\b/i.test(text)) tags.protection = true;
+  if(/\breturn target .* from your graveyard\b|\breanimate\b|\bflashback\b|\bescape\b|\bregrowth\b|\brecur/i.test(text)) tags.recursion = true;
+  if(card.cmc >= 7 || /\byou win the game\b|\binfinite\b|\bextra turn\b|\bdouble the damage\b|\bfor each opponent\b.*lose\b|\bwhenever you cast .* copy\b/i.test(text)) tags.finisher = true;
+  if(/\btutor\b|search your library for a card|search your library for an artifact|search your library for an enchantment|search your library for a creature card/i.test(text)) tags.tutor = true;
+  if(card.cmc >= 2 && !isLand && !tags.ramp && !tags.draw && !tags.removal && !tags.finisher) tags.synergy = true;
+  if(/\bwhenever\b|\bfor each\b|\btoken\b|\bmodified\b|\bventure\b|\bdungeon\b|\blandfall\b|\bartifact\b|\benchantment\b|\bgraveyard\b|\bblink\b|\bsacrifice\b/.test(text)) tags.synergy = true;
+
+  return tags;
+}
+
+function uniqueNames(cards, pred){ return [...new Set(cards.filter(pred).map(c => c.name))].sort(); }
+function renderSimpleList(id, names){
+  const el = $(id);
+  if(!names.length){ el.innerHTML = '<div class="muted">None detected.</div>'; return; }
+  el.innerHTML = names.map(n => `<div class="item"><span class="name">${escapeHtml(n)}</span></div>`).join('');
+}
+function countTags(cards){
+  const counts = {lands:0,ramp:0,draw:0,removal:0,wipe:0,protection:0,recursion:0,finisher:0,synergy:0,tutor:0,rock1:0,counter:0};
+  for(const c of (cards || [])){
+    const tags = c?.tags || {};
+    if(tags.land) counts.lands++;
+    for(const k of Object.keys(counts)) if(k !== 'lands' && tags[k]) counts[k]++;
+  }
+  return counts;
+}
+function manaColorsForLand(card){
+  const type = (card.type_line || '').toLowerCase();
+  const text = (card.oracle_text || '').toLowerCase();
+  const colors = new Set(card.produced_mana || []);
+  if(type.includes('plains')) colors.add('W');
+  if(type.includes('island')) colors.add('U');
+  if(type.includes('swamp')) colors.add('B');
+  if(type.includes('mountain')) colors.add('R');
+  if(type.includes('forest')) colors.add('G');
+  if(/add one mana of any color|mana of any color/.test(text)){ ['W','U','B','R','G'].forEach(c=>colors.add(c)); }
+  const symbols = [...text.matchAll(/add\s+\{([wubrgc])\}/ig)].map(m=>m[1].toUpperCase());
+  symbols.forEach(s=>colors.add(s));
+  return [...colors].filter(c => 'WUBRG'.includes(c));
+}
+function parseManaCostColors(cost=''){ return [...new Set([...cost.matchAll(/\{([WUBRG])\}/g)].map(m=>m[1]))]; }
+function cardNeedsColors(card){ return card.color_identity?.length ? card.color_identity : parseManaCostColors(card.mana_cost || ''); }
+function commandZoneNames(){ return ['commander1','commander2'].map(id => $(id).value.trim()).filter(Boolean); }
+function splitCommandZone(cards){
+  const names = new Set(commandZoneNames().map(x=>x.toLowerCase()));
+  const command = []; const library = []; const removed = new Map();
+  for(const c of cards){
+    const lower = c.name.toLowerCase();
+    if(names.has(lower) && !removed.get(lower)){ command.push(c); removed.set(lower, true); }
+    else library.push(c);
+  }
+  return {command, library};
+}
+
+function karstenLandSuggestion(cards){
+  const counts = countTags(cards);
+  const nonlands = cards.filter(c=>!c.tags.land);
+  const amv = nonlands.reduce((a,c)=>a+c.cmc,0) / Math.max(1, nonlands.length);
+  const raw = 31.42 + 3.13 * amv - 0.28 * counts.ramp;
+  const override = Number($('karstenOverride').value);
+  const suggested = Number.isFinite(override) && override > 0 ? override : raw;
+  return {amv, ramp:counts.ramp, raw, suggested:Math.round(suggested*10)/10};
+}
+
+function evaluateCommanderFit(cards, commanders){
+  if(!commanders.length){
+    return { text:'No commander metadata was entered, so commander support is only estimated from the 99.', overlapStrong:false, overlapCount:0 };
+  }
+  const traits = new Set();
+  for(const c of commanders){
+    const text = (c.oracle_text || '').toLowerCase();
+    const type = (c.type_line || '').toLowerCase();
+    if(/draw/.test(text)) traits.add('draw');
+    if(/treasure|artifact/.test(text)) traits.add('artifact');
+    if(/enchantment/.test(text)) traits.add('enchantment');
+    if(/creature token|token/.test(text)) traits.add('tokens');
+    if(/graveyard|dies|sacrifice/.test(text)) traits.add('graveyard');
+    if(/land/.test(text)) traits.add('lands');
+    if(/instant|sorcery|cast a spell/.test(text)) traits.add('spells');
+    if(/venture|dungeon/.test(text)) traits.add('dungeon');
+    if(/combat|attacks?/.test(text)) traits.add('combat');
+    if(type.includes('dragon')) traits.add('dragons');
+  }
+  let overlap = 0;
+  const examples = [];
+  for(const card of cards){
+    const t = (card.oracle_text||'').toLowerCase() + ' ' + (card.type_line||'').toLowerCase();
+    for(const trait of traits){
+      let matched = false;
+      if(trait==='draw' && card.tags.draw) matched = true;
+      if(trait==='artifact' && /artifact|treasure/.test(t)) matched = true;
+      if(trait==='enchantment' && /enchantment/.test(t)) matched = true;
+      if(trait==='tokens' && /token/.test(t)) matched = true;
+      if(trait==='graveyard' && /graveyard|dies|sacrifice|reanimate/.test(t)) matched = true;
+      if(trait==='lands' && /land|landfall/.test(t)) matched = true;
+      if(trait==='spells' && /instant|sorcery|noncreature|cast/.test(t)) matched = true;
+      if(trait==='dungeon' && /venture|dungeon|initiative/.test(t)) matched = true;
+      if(trait==='combat' && /attack|combat/.test(t)) matched = true;
+      if(trait==='dragons' && /dragon/.test(t)) matched = true;
+      if(matched){ overlap++; if(examples.length < 8) examples.push(card.name); break; }
+    }
+  }
+  const overlapStrong = overlap >= 12 || (traits.size && overlap / Math.max(1, cards.length) >= 0.14);
+  const text = overlapStrong
+    ? `The deck appears to meaningfully support the commander plan. Example overlap pieces: ${examples.join(', ')}.`
+    : `The deck does not show a strong mechanical overlap with the commander plan yet. Example overlap pieces: ${examples.join(', ') || 'none obvious'}.`;
+  return { overlapStrong, overlapCount:overlap, text };
+}
+
+function estimateCommanderTurn(cards, commanders){
+  if(!commanders.length) return 5;
+  const commanderMv = commanders.reduce((a,c)=>a + Math.max(0, c.cmc || 0), 0) / commanders.length || 4;
+  const cheapRamp = cards.filter(c => c.tags.ramp && c.cmc <= 2).length;
+  const lands = cards.filter(c => c.tags.land).length;
+  let turn = Math.max(2, Math.ceil(commanderMv));
+  if(lands >= 37) turn -= 1;
+  if(cheapRamp >= 10) turn -= 1;
+  if(cheapRamp <= 4) turn += 1;
+  return Math.max(2, Math.min(9, turn));
+}
+
+function scoreDeck(cards, commanders){
+  const counts = countTags(cards);
+  const nonlands = cards.length - counts.lands;
+  const avgCmc = cards.filter(c=>!c.tags.land).reduce((a,c)=>a+c.cmc,0) / Math.max(1, nonlands);
+  const cheapRamp = cards.filter(c => c.tags.ramp && c.cmc <= 2).length;
+  const efficientRemoval = cards.filter(c => c.tags.removal && c.cmc <= 3).length;
+  const commanderFit = evaluateCommanderFit(cards, commanders);
+  const estimatedTurnCommander = estimateCommanderTurn(cards, commanders);
+  const karsten = karstenLandSuggestion(cards);
+
+  let manaSpeed = 0;
+  if(cheapRamp >= 16 || counts.rock1 >= 4) manaSpeed = 5;
+  else if(cheapRamp >= 12) manaSpeed = 4;
+  else if(cheapRamp >= 8) manaSpeed = 3;
+  else if(cheapRamp >= 5) manaSpeed = 2;
+  else if(cheapRamp >= 2) manaSpeed = 1;
+
+  let cardAdv = 0;
+  if(counts.draw + counts.tutor >= 20) cardAdv = 5;
+  else if(counts.draw + counts.tutor >= 15) cardAdv = 4;
+  else if(counts.draw >= 10) cardAdv = 3;
+  else if(counts.draw >= 6) cardAdv = 2;
+  else if(counts.draw >= 3) cardAdv = 1;
+
+  let interaction = 0;
+  const interTotal = counts.removal + counts.counter;
+  if(interTotal >= 18) interaction = 5;
+  else if(interTotal >= 14 && efficientRemoval >= 8) interaction = 4;
+  else if(interTotal >= 10) interaction = 3;
+  else if(interTotal >= 6) interaction = 2;
+  else if(interTotal >= 3) interaction = 1;
+
+  let cmdDep = 3;
+  if(commanders.length){
+    if(commanderFit.overlapStrong && counts.synergy >= 24) cmdDep = 4;
+    if(commanderFit.overlapStrong && counts.synergy < 12) cmdDep = 2;
+    if(!commanderFit.overlapStrong && counts.synergy >= 20) cmdDep = 5;
+    if(!commanderFit.overlapStrong && counts.synergy < 10) cmdDep = 1;
+  }
+
+  let winSpeed = 0;
+  if(estimatedTurnCommander <= 3 && counts.finisher >= 8 && avgCmc < 3.0) winSpeed = 5;
+  else if(estimatedTurnCommander <= 4 && counts.finisher >= 6) winSpeed = 4;
+  else if(estimatedTurnCommander <= 5) winSpeed = 3;
+  else if(estimatedTurnCommander <= 7) winSpeed = 2;
+  else if(estimatedTurnCommander <= 9) winSpeed = 1;
+
+  let winQuality = 0;
+  if(counts.finisher >= 10 && counts.tutor >= 4) winQuality = 5;
+  else if(counts.finisher >= 8) winQuality = 4;
+  else if(counts.finisher >= 5) winQuality = 3;
+  else if(counts.finisher >= 2) winQuality = 2;
+  else if(counts.synergy >= 12) winQuality = 1;
+
+  let resilience = 0;
+  const resil = counts.protection + counts.recursion + counts.draw;
+  if(resil >= 20) resilience = 5;
+  else if(resil >= 15) resilience = 4;
+  else if(resil >= 10) resilience = 3;
+  else if(resil >= 6) resilience = 2;
+  else if(resil >= 3) resilience = 1;
+
+  const scores = [manaSpeed, cardAdv, interaction, cmdDep, winSpeed, winQuality, resilience];
+  const total = scores.reduce((a,b)=>a+b,0);
+  const bracket = convertTotalToBracket(total, counts, estimatedTurnCommander, commanderFit);
+  return { counts, avgCmc, nonlands, scores, total, bracket, commanderFit, estimatedTurnCommander, karsten };
+}
+
+function convertTotalToBracket(total, counts, commanderTurn, commanderFit){
+  let base = 1;
+  if(total >= 32) base = 5;
+  else if(total >= 24) base = 4;
+  else if(total >= 15) base = 3;
+  else if(total >= 9) base = 2;
+  if(base===5) return { value:'5.0', label:'cEDH / Competitive' };
+  const ranges = {1:[0,8],2:[9,14],3:[15,23],4:[24,31]};
+  const [minT,maxT] = ranges[base];
+  const frac = (total - minT) / Math.max(1, (maxT - minT));
+  let dec = Math.max(0, Math.min(.9, Math.round(frac*9)/10));
+  if(counts.tutor >= 4) dec += 0.1;
+  if(counts.rock1 >= 3) dec += 0.1;
+  if(counts.finisher >= 8 && counts.synergy >= 20) dec += 0.1;
+  if(commanderTurn >= 6) dec -= 0.1;
+  if(!commanderFit.overlapStrong) dec -= 0.1;
+  dec = Math.max(0, Math.min(.9, Math.round(dec*10)/10));
+  const labels = {1:'Jank / Theme First',2:'Casual / Functional',3:'High-Power Casual',4:'Very High Power / cEDH-Adjacent'};
+  return { value: `${base}.${Math.round(dec*10)}`, label: labels[base] };
+}
+
+function renderScores(analysis){
+  const wrap = $('sliders'); wrap.innerHTML = '';
+  analysis.scores.forEach((v,i)=>{
+    const row = document.createElement('div');
+    row.className = 'slider-row';
+    row.innerHTML = `<div>${escapeHtml(categoryNames[i])}</div><input type="range" min="0" max="5" step="1" value="${v}" data-idx="${i}"><div id="sv${i}">${v}</div><div class="score-help" id="sd${i}">${escapeHtml(categoryDescriptions[i][v])}</div>`;
+    wrap.appendChild(row);
   });
-  const text = await resp.text();
-  if(!resp.ok) throw new Error(`HTTP ${resp.status}: ${text.slice(0, 300)}`);
-  return JSON.parse(text);
+  wrap.querySelectorAll('input[type=range]').forEach(inp=>inp.addEventListener('input', ()=>{
+    const idx = Number(inp.dataset.idx);
+    $('sv'+idx).textContent = inp.value;
+    $('sd'+idx).textContent = categoryDescriptions[idx][Number(inp.value)] || '';
+    recomputeFromSliders();
+  }));
+}
+function recomputeFromSliders(){
+  const vals = [...$('sliders').querySelectorAll('input[type=range]')].map(x => parseInt(x.value,10));
+  const total = vals.reduce((a,b)=>a+b,0);
+  const bracket = convertTotalToBracket(total, current.analysis.counts, current.analysis.estimatedTurnCommander, current.analysis.commanderFit);
+  $('bracketScore').textContent = bracket.value;
+  $('bracketLabel').textContent = bracket.label;
+  $('totalScoreText').textContent = `Total category score: ${total} / 35`;
 }
 
-// Deeply extract two-card combos from unknown JSON shapes.
-// Strategy: walk objects/arrays and look for arrays containing card names.
-function extractTwoCardPairsFromAnyJson(root){
-  const pairs = [];
-  const seen = new Set();
+function benchmarkRows(cards){
+  const counts = countTags(cards);
+  const rows = [
+    {label:'Turn 1: 1-drop rock', have:counts.rock1, need:+$('bmRock1').value, hit:'77%'},
+    {label:'Turn 2: ramp', have:counts.ramp, need:+$('bmRamp2').value, hit:'76.2%'},
+    {label:'Turn 3: draw', have:counts.draw, need:+$('bmDraw3').value, hit:'74.3%'},
+    {label:'Turn 4: 4+ lands benchmark', have:counts.lands, need:+$('bmLands4').value, hit:'75%'},
+    {label:'Turn 6: removal', have:counts.removal, need:+$('bmRemoval6').value, hit:'77.3%'},
+    {label:'Turn 7: synergy', have:counts.synergy, need:+$('bmSynergy7').value, hit:'86.5%'},
+    {label:'Turn 8: finisher', have:counts.finisher, need:+$('bmFinisher8').value, hit:'84.3%'}
+  ];
+  $('benchmarks').innerHTML = `<table class="table"><thead><tr><th>Benchmark</th><th>Deck count</th><th>Target</th><th>Read</th></tr></thead><tbody>${
+    rows.map(r=>{
+      const cls = r.have >= r.need ? 'good' : (r.have >= Math.floor(r.need*0.7) ? 'warn' : 'bad');
+      const txt = r.have >= r.need ? 'At or above benchmark' : 'Below benchmark';
+      return `<tr><td>${escapeHtml(r.label)}</td><td>${r.have}</td><td>${r.need} (${r.hit})</td><td class="${cls}">${txt}</td></tr>`;
+    }).join('')
+  }</tbody></table>`;
+}
+function summarizeAnalysis(a){
+  const c = a.counts;
+  const lines = [];
+  lines.push(`The auto-score sees ${c.lands} lands, ${c.ramp} ramp pieces, ${c.draw} draw/advantage cards, ${c.removal} interaction pieces, ${c.protection} protection cards, ${c.recursion} recursion cards, ${c.synergy} synergy cards, and ${c.finisher} finishers.`);
+  lines.push(`Estimated commander landing turn: about turn ${a.estimatedTurnCommander}. Average nonland mana value: ${a.avgCmc.toFixed(2)}.`);
+  lines.push(`Karsten mana-base suggestion: ${a.karsten.suggested.toFixed(1)} lands from 31.42 + 3.13 × AMV − 0.28 × Ramp. Your current deck shows ${c.lands} lands.`);
+  lines.push(a.commanderFit.text);
+  lines.push(`This produces an initial ${a.bracket.value} rating in ${a.bracket.label}. You can still adjust the seven category sliders if the deck plays faster, slower, or more commander-reliant than the heuristics detect.`);
+  return lines.join('\n\n');
+}
 
-  const isCardNameish = (s) => {
-    if(typeof s !== "string") return false;
-    const t = s.trim();
-    if(t.length < 2 || t.length > 90) return false;
-    if(!/[A-Za-z]/.test(t)) return false;
-    return true;
-  };
-
-  const considerArray = (arr) => {
-    // If it's an array of strings (or objects with name) try to normalize
-    const names = arr.map(x => {
-      if(typeof x === "string") return normalizeName(x);
-      if(x && typeof x === "object" && typeof x.name === "string") return normalizeName(x.name);
-      return null;
-    }).filter(Boolean);
-
-    if(names.length === 2){
-      const a = names[0], b = names[1];
-      if(a && b && a !== b){
-        const key = [a,b].sort().join("||");
-        if(!seen.has(key)){
-          seen.add(key);
-          pairs.push([a,b]);
-        }
-      }
+function shuffle(arr){ const a = arr.slice(); for(let i=a.length-1;i>0;i--){ const j = Math.floor(Math.random()*(i+1)); [a[i],a[j]] = [a[j],a[i]]; } return a; }
+function isLand(card){ return !!card.tags.land; }
+function canProduceFromSources(sources){
+  const set = new Set();
+  for(const s of sources){
+    if(s.kind==='land') manaColorsForLand(s.card).forEach(c=>set.add(c));
+    if(s.kind==='rock'){ const colors = s.card.produced_mana?.length ? s.card.produced_mana : ['W','U','B','R','G']; colors.forEach(c=>set.add(c)); }
+    if(s.kind==='dork'){ const colors = s.card.produced_mana?.length ? s.card.produced_mana : s.card.color_identity || []; colors.forEach(c=>set.add(c)); }
+  }
+  return set;
+}
+function canCast(card, sources, genericMana){ const needs = cardNeedsColors(card); const pool = canProduceFromSources(sources); for(const c of needs){ if(!pool.has(c)) return false; } return genericMana >= Math.ceil(card.cmc || 0); }
+function sourceFromPermanent(card){ if(card.tags.land) return {kind:'land', card}; if(card.tags.ramp){ const type=(card.type_line||'').toLowerCase(); if(type.includes('creature')) return {kind:'dork', card}; return {kind:'rock', card}; } return null; }
+function chooseLandToPlay(hand, battlefield, commanders){
+  const lands = hand.filter(isLand); if(!lands.length) return null;
+  const needed = new Set(); const cmdColors = commanders.flatMap(c => c.color_identity || []); cmdColors.forEach(c => needed.add(c));
+  const rampSpells = hand.filter(c => c.tags.ramp && !c.tags.land); rampSpells.forEach(c => cardNeedsColors(c).forEach(x => needed.add(x)));
+  const current = canProduceFromSources(battlefield.filter(p => p.produces));
+  let best = lands[0], bestScore=-999;
+  for(const land of lands){
+    const colors = manaColorsForLand(land); let score = 0;
+    if(colors.length >= 3) score += 5; if(colors.length === 0) score += 1;
+    for(const c of colors){ if(needed.has(c) && !current.has(c)) score += 4; else if(needed.has(c)) score += 1; }
+    if(/any color/i.test((land.oracle_text||''))) score += 6;
+    if(score > bestScore){ best=land; bestScore=score; }
+  }
+  return best;
+}
+function openingCounts(hand){ return { lands:hand.filter(c=>c.tags.land).length, ramp:hand.filter(c=>c.tags.ramp).length, draw:hand.filter(c=>c.tags.draw).length, protection:hand.filter(c=>c.tags.protection).length, removal:hand.filter(c=>c.tags.removal).length }; }
+function keepHand(hand){
+  const c = openingCounts(hand);
+  const checks = [];
+  if($('toggleLands').checked) checks.push(c.lands >= +$('minLands').value && c.lands <= +$('maxLands').value);
+  if($('toggleRamp').checked) checks.push(c.ramp >= +$('minRampOpen').value);
+  if($('toggleDraw').checked) checks.push(c.draw >= +$('minDrawOpen').value);
+  if($('toggleProtect').checked) checks.push(c.protection >= +$('minProtectOpen').value);
+  if($('toggleRemoval').checked) checks.push(c.removal >= +$('minRemovalOpen').value);
+  return checks.every(Boolean);
+}
+function doMulligan(library){
+  let handSize = 7, freeUsed = false, hand = [], lib = library.slice();
+  const log = []; let mulligansTaken = 0;
+  while(true){
+    hand = lib.splice(0, handSize);
+    const counts = openingCounts(hand); const keep = keepHand(hand) || handSize === 1;
+    log.push(`Draw ${handSize}: ${hand.map(c=>c.name).join(', ')} | lands ${counts.lands}, ramp ${counts.ramp}, draw ${counts.draw}, protection ${counts.protection}, removal ${counts.removal} ${keep ? '→ keep' : '→ mulligan'}`);
+    if(keep) return {hand, library:lib, log, handSize, mulligansTaken};
+    mulligansTaken++; lib = shuffle(library);
+    if(!freeUsed){ freeUsed = true; handSize = 7; } else handSize = Math.max(1, handSize - 1);
+  }
+}
+function chooseCastOrder(hand, commanders, commanderCastable, sources, genericMana){
+  if(commanderCastable) return {type:'commander'};
+  const ramps = hand.filter(c => c.tags.ramp && !c.tags.land).sort((a,b)=>a.cmc-b.cmc); for(const c of ramps) if(canCast(c, sources, genericMana)) return {type:'spell', card:c};
+  const oneDrops = hand.filter(c => !c.tags.land && c.cmc <= 1).sort((a,b)=>a.cmc-b.cmc); for(const c of oneDrops) if(canCast(c, sources, genericMana)) return {type:'spell', card:c};
+  const cheap = hand.filter(c => !c.tags.land && c.cmc <= 3).sort((a,b)=>a.cmc-b.cmc); for(const c of cheap) if(canCast(c, sources, genericMana)) return {type:'spell', card:c};
+  const finishers = hand.filter(c => c.tags.finisher).sort((a,b)=>a.cmc-b.cmc); for(const c of finishers) if(canCast(c, sources, genericMana)) return {type:'spell', card:c};
+  return null;
+}
+function commanderCanCast(commanders, battlefield){ if(!commanders.length) return false; const mana = battlefield.filter(p=>p.produces).length; return commanders.some(cmd => canCast(cmd, battlefield.filter(p=>p.produces), mana)); }
+function inferProbableWinTurn(turn, hand, battlefield, commanders){
+  const sources = battlefield.filter(p=>p.produces); const mana = sources.length;
+  const finisher = hand.find(c => c.tags.finisher && canCast(c, sources, mana));
+  if(finisher) return turn;
+  const commanderOnBoard = battlefield.some(p => p.kind === 'commander');
+  const synergyCount = battlefield.filter(p => p.card.tags && p.card.tags.synergy).length;
+  if(commanderOnBoard && synergyCount >= 3 && mana >= 7) return turn + 1;
+  return null;
+}
+function simulateGame(allCards, commanders){
+  const split = splitCommandZone(allCards); const library0 = shuffle(split.library); const mull = doMulligan(library0);
+  let library = mull.library; let hand = mull.hand.slice(); let battlefield = []; let commandCastTurn = null; const turns = [];
+  const maxTurns = FULL_SIM_TURNS; const commandersLeft = commanders.slice();
+  const hit = { drawTurn:null, rampTurn:null, removalTurn:null, protectionTurn:null, finisherTurn:null, synergyTurn:null, fourLandsTurn:null, rock1Turn:null };
+  let probableWinTurn = null;
+  const utilityTimeline = {};
+  for(let turn=1; turn<=maxTurns; turn++){
+    const events = []; events.push(`Turn ${turn}: untap/upkeep`);
+    if(library.length){
+      const draw = library.shift(); hand.push(draw); events.push(`Draw: ${draw.name} ${draw.mana_cost || ''}`.trim());
+      if(draw.tags.draw && hit.drawTurn===null) hit.drawTurn = turn;
+      if(draw.tags.removal && hit.removalTurn===null) hit.removalTurn = turn;
+      if(draw.tags.finisher && hit.finisherTurn===null) hit.finisherTurn = turn;
+      if(draw.tags.synergy && hit.synergyTurn===null) hit.synergyTurn = turn;
+      if(draw.tags.rock1 && hit.rock1Turn===null) hit.rock1Turn = turn;
+      if(draw.tags.ramp && hit.rampTurn===null) hit.rampTurn = turn;
+      if(draw.tags.protection && hit.protectionTurn===null) hit.protectionTurn = turn;
     }
-  };
-
-  const walk = (node) => {
-    if(!node) return;
-    if(Array.isArray(node)){
-      // arrays of potential card names
-      const allStringsOrNamed =
-        node.length >= 2 &&
-        node.every(x =>
-          typeof x === "string" ||
-          (x && typeof x === "object" && typeof x.name === "string")
-        );
-      if(allStringsOrNamed){
-        // Some arrays represent a whole combo (could be 2+ cards)
-        // We only want exactly 2-card combos here:
-        considerArray(node);
+    const land = chooseLandToPlay(hand, battlefield, commanders);
+    if(land){ hand.splice(hand.indexOf(land),1); battlefield.push({card:land, produces:true, kind:'land'}); events.push(`Play land: ${land.name}`); } else events.push('No land played');
+    const landCount = battlefield.filter(p=>p.kind==='land').length; if(landCount >= 4 && hit.fourLandsTurn===null) hit.fourLandsTurn = turn;
+    let genericMana = battlefield.filter(p=>p.produces).length; let actionCount = 0;
+    while(actionCount < 2){
+      const commanderCastable = !commandCastTurn && commanderCanCast(commandersLeft, battlefield);
+      const action = chooseCastOrder(hand, commandersLeft, commanderCastable, battlefield, genericMana);
+      if(!action) break;
+      if(action.type === 'commander'){
+        const cmd = commandersLeft.find(c => canCast(c, battlefield.filter(p=>p.produces), genericMana)); if(!cmd) break;
+        const ix = commandersLeft.indexOf(cmd); commandersLeft.splice(ix,1); commandCastTurn = turn; battlefield.push({card:cmd, produces:false, kind:'commander'}); genericMana -= Math.ceil(cmd.cmc || 0); events.push(`Cast commander: ${cmd.name} ${cmd.mana_cost || ''}`.trim());
+      } else {
+        const card = action.card; hand.splice(hand.indexOf(card),1); genericMana -= Math.ceil(card.cmc || 0); const src = sourceFromPermanent(card); battlefield.push({card, produces:!!src, kind:src ? src.kind : 'spell'}); events.push(`Cast: ${card.name} ${card.mana_cost || ''}`.trim());
+        if(card.tags.ramp && hit.rampTurn===null) hit.rampTurn = turn;
+        if(card.tags.draw && hit.drawTurn===null) hit.drawTurn = turn;
+        if(card.tags.removal && hit.removalTurn===null) hit.removalTurn = turn;
+        if(card.tags.finisher && hit.finisherTurn===null) hit.finisherTurn = turn;
+        if(card.tags.synergy && hit.synergyTurn===null) hit.synergyTurn = turn;
+        if(card.tags.rock1 && hit.rock1Turn===null) hit.rock1Turn = turn;
+        if(card.tags.protection && hit.protectionTurn===null) hit.protectionTurn = turn;
       }
+      if(probableWinTurn === null){ const guess = inferProbableWinTurn(turn, hand, battlefield, commanders); if(guess !== null) probableWinTurn = Math.min(FULL_SIM_TURNS, guess); }
+      actionCount++;
+    }
+    utilityTimeline[turn] = {
+      handRamp: hand.filter(c=>c.tags.ramp).length,
+      handDraw: hand.filter(c=>c.tags.draw).length,
+      handRemoval: hand.filter(c=>c.tags.removal || c.tags.wipe).length,
+      handProtection: hand.filter(c=>c.tags.protection).length,
+      battleRamp: battlefield.filter(p=>p.card.tags && p.card.tags.ramp).length,
+      battleDraw: battlefield.filter(p=>p.card.tags && p.card.tags.draw).length,
+      battleRemoval: battlefield.filter(p=>p.card.tags && (p.card.tags.removal || p.card.tags.wipe)).length,
+      battleProtection: battlefield.filter(p=>p.card.tags && p.card.tags.protection).length,
+    };
+    turns.push({turn, events, hand:hand.map(c=>`${c.name} ${c.mana_cost||''}`.trim()), battlefield:battlefield.map(p=>p.card.name)});
+  }
+  return {mulliganLog:mull.log, mulligansTaken:mull.mulligansTaken, keptHandSize:mull.handSize, turns, commandCastTurn, hit, probableWinTurn, utilityTimeline};
+}
 
-      // Always recurse
-      for(const x of node) walk(x);
+function runBatchGoldfish(runs){
+  const batch = {
+    runs, sims:[], mulliganHandSizes:{}, commanderTurns:{}, winTurns:{},
+    benchmarkHits:{rock1:0,ramp:0,draw:0,lands:0,removal:0,synergy:0,finisher:0},
+    utilityStats:{
+      draw:{byTurn:{}}, ramp:{byTurn:{}}, removal:{byTurn:{}}, protection:{byTurn:{}},
+      hand:{ramp:Array(FULL_SIM_TURNS+1).fill(0),draw:Array(FULL_SIM_TURNS+1).fill(0),removal:Array(FULL_SIM_TURNS+1).fill(0),protection:Array(FULL_SIM_TURNS+1).fill(0)},
+      battlefield:{ramp:Array(FULL_SIM_TURNS+1).fill(0),draw:Array(FULL_SIM_TURNS+1).fill(0),removal:Array(FULL_SIM_TURNS+1).fill(0),protection:Array(FULL_SIM_TURNS+1).fill(0)}
+    },
+    avgCommander:0, avgWin:0, avgMulligans:0
+  };
+  let commanderSum = 0, commanderSeen = 0, winSum = 0, winSeen = 0;
+  for(let i=0;i<runs;i++){
+    const sim = simulateGame(current.parsed, current.commanders);
+    batch.sims.push(sim);
+    batch.mulliganHandSizes[sim.keptHandSize] = (batch.mulliganHandSizes[sim.keptHandSize] || 0) + 1;
+    batch.avgMulligans += sim.mulligansTaken;
+    const cmdTurn = sim.commandCastTurn ?? (SHORT_TURN_VIEW + 1);
+    batch.commanderTurns[cmdTurn] = (batch.commanderTurns[cmdTurn] || 0) + 1;
+    if(sim.commandCastTurn != null){ commanderSum += sim.commandCastTurn; commanderSeen++; }
+    const winTurn = sim.probableWinTurn ?? FULL_SIM_TURNS;
+    batch.winTurns[winTurn] = (batch.winTurns[winTurn] || 0) + 1;
+    if(sim.probableWinTurn != null){ winSum += sim.probableWinTurn; winSeen++; }
+    if(sim.hit.rock1Turn && sim.hit.rock1Turn <= 1) batch.benchmarkHits.rock1++;
+    if(sim.hit.rampTurn && sim.hit.rampTurn <= 2) batch.benchmarkHits.ramp++;
+    if(sim.hit.drawTurn && sim.hit.drawTurn <= 3) batch.benchmarkHits.draw++;
+    if(sim.hit.fourLandsTurn && sim.hit.fourLandsTurn <= 4) batch.benchmarkHits.lands++;
+    if(sim.hit.removalTurn && sim.hit.removalTurn <= 6) batch.benchmarkHits.removal++;
+    if(sim.hit.synergyTurn && sim.hit.synergyTurn <= 7) batch.benchmarkHits.synergy++;
+    if(sim.hit.finisherTurn && sim.hit.finisherTurn <= 8) batch.benchmarkHits.finisher++;
+    ['draw','ramp','removal','protection'].forEach(key=>{
+      const t = sim.hit[key+'Turn'];
+      const bucket = t == null ? 'miss' : String(Math.min(SHORT_TURN_VIEW + 1, t));
+      batch.utilityStats[key].byTurn[bucket] = (batch.utilityStats[key].byTurn[bucket] || 0) + 1;
+    });
+    for(let turn=1; turn<=FULL_SIM_TURNS; turn++){
+      const u = sim.utilityTimeline[turn];
+      batch.utilityStats.hand.ramp[turn] += u.handRamp;
+      batch.utilityStats.hand.draw[turn] += u.handDraw;
+      batch.utilityStats.hand.removal[turn] += u.handRemoval;
+      batch.utilityStats.hand.protection[turn] += u.handProtection;
+      batch.utilityStats.battlefield.ramp[turn] += u.battleRamp;
+      batch.utilityStats.battlefield.draw[turn] += u.battleDraw;
+      batch.utilityStats.battlefield.removal[turn] += u.battleRemoval;
+      batch.utilityStats.battlefield.protection[turn] += u.battleProtection;
+    }
+  }
+  batch.avgMulligans = batch.avgMulligans / runs;
+  batch.avgCommander = commanderSeen ? commanderSum / commanderSeen : null;
+  batch.avgWin = winSeen ? winSum / winSeen : null;
+  ['ramp','draw','removal','protection'].forEach(key=>{
+    for(let turn=1; turn<=FULL_SIM_TURNS; turn++){
+      batch.utilityStats.hand[key][turn] = +(batch.utilityStats.hand[key][turn] / runs).toFixed(2);
+      batch.utilityStats.battlefield[key][turn] = +(batch.utilityStats.battlefield[key][turn] / runs).toFixed(2);
+    }
+  });
+  return batch;
+}
+
+function drawBarChart(canvasId, labels, values, opts={}){
+  const c = $(canvasId); const ctx = c.getContext('2d'); const w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h);
+  ctx.fillStyle = '#081423'; ctx.fillRect(0,0,w,h);
+  const pad = {l:44,r:16,t:20,b:44}; const innerW = w-pad.l-pad.r, innerH = h-pad.t-pad.b;
+  const maxV = Math.max(1, ...(values.length?values:[1]));
+  ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){ const y = pad.t + innerH * i/4; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
+  const barW = innerW / Math.max(1, labels.length) * 0.65;
+  labels.forEach((label, i)=>{
+    const x = pad.l + innerW*(i+0.5)/labels.length; const v = values[i] || 0; const bh = innerH * (v/maxV); const y = pad.t + innerH - bh;
+    const grad = ctx.createLinearGradient(0,y,0,y+bh); grad.addColorStop(0,'#7dd3fc'); grad.addColorStop(1,'#c084fc');
+    ctx.fillStyle = grad; ctx.fillRect(x-barW/2, y, barW, bh);
+    ctx.fillStyle = '#eaf3ff'; ctx.font = '12px Arial'; ctx.textAlign = 'center'; ctx.fillText(String(v), x, Math.max(14, y-6));
+    ctx.fillStyle = '#9db0c7'; ctx.fillText(String(label), x, h-18);
+  });
+  ctx.save(); ctx.translate(16, h/2); ctx.rotate(-Math.PI/2); ctx.fillStyle='#9db0c7'; ctx.textAlign='center'; ctx.fillText(opts.yLabel || 'Count', 0, 0); ctx.restore();
+}
+
+
+function drawMultiLineChart(canvasId, labels, series, opts={}){
+  const c = $(canvasId); const ctx = c.getContext('2d'); const w = c.width, h = c.height;
+  ctx.clearRect(0,0,w,h); ctx.fillStyle = '#081423'; ctx.fillRect(0,0,w,h);
+  const pad = {l:44,r:16,t:20,b:44}; const innerW = w-pad.l-pad.r, innerH = h-pad.t-pad.b;
+  const allValues = series.flatMap(s=>s.values);
+  const maxV = Math.max(1, ...allValues);
+  ctx.strokeStyle = 'rgba(255,255,255,.12)'; ctx.lineWidth = 1;
+  for(let i=0;i<=4;i++){ const y = pad.t + innerH * i/4; ctx.beginPath(); ctx.moveTo(pad.l,y); ctx.lineTo(w-pad.r,y); ctx.stroke(); }
+  const palette = ['#7dd3fc','#c084fc','#34d399','#fbbf24'];
+  series.forEach((s,si)=>{
+    ctx.strokeStyle = palette[si % palette.length]; ctx.lineWidth = 2; ctx.beginPath();
+    s.values.forEach((v,i)=>{
+      const x = pad.l + innerW*(labels.length===1?0.5:(i/(labels.length-1)));
+      const y = pad.t + innerH - innerH*(v/maxV);
+      if(i===0) ctx.moveTo(x,y); else ctx.lineTo(x,y);
+    });
+    ctx.stroke();
+  });
+  ctx.fillStyle = '#9db0c7'; ctx.font = '12px Arial'; ctx.textAlign = 'center';
+  labels.forEach((label,i)=>{ const x = pad.l + innerW*(labels.length===1?0.5:(i/(labels.length-1))); ctx.fillText(String(label), x, h-18); });
+  ctx.save(); ctx.translate(16, h/2); ctx.rotate(-Math.PI/2); ctx.fillText(opts.yLabel || 'Average count', 0, 0); ctx.restore();
+  let lx = pad.l, ly = 12; ctx.textAlign='left';
+  series.forEach((s,si)=>{ ctx.fillStyle=palette[si % palette.length]; ctx.fillRect(lx, ly-8, 14, 4); ctx.fillStyle='#dbeafe'; ctx.fillText(s.label, lx+20, ly); lx += 120; if(lx > w-140){ lx = pad.l; ly += 14; } });
+}
+function renderBatchCharts(batch){
+  $('chartsPanel').style.display = '';
+  const mullLabels = ['7','6','5','4','3','2','1'];
+  drawBarChart('chartMulligans', mullLabels, mullLabels.map(k => batch.mulliganHandSizes[k] || 0), {yLabel:'Games'});
+
+  const cmdLabels = []; const cmdValues = [];
+  for(let t=1;t<=SHORT_TURN_VIEW+1;t++){ cmdLabels.push(t === SHORT_TURN_VIEW+1 ? `${SHORT_TURN_VIEW}+` : String(t)); cmdValues.push(batch.commanderTurns[t] || 0); }
+  drawBarChart('chartCommander', cmdLabels, cmdValues, {yLabel:'Games'});
+
+  const winLabels = []; const winValues = [];
+  for(let t=1;t<=FULL_SIM_TURNS;t++){ winLabels.push(String(t)); winValues.push(batch.winTurns[t] || 0); }
+  drawBarChart('chartWins', winLabels, winValues, {yLabel:'Games'});
+
+  const benchLabels = ['T1 rock','T2 ramp','T3 draw','T4 lands','T6 removal','T7 synergy','T8 finisher'];
+  const benchValues = [batch.benchmarkHits.rock1,batch.benchmarkHits.ramp,batch.benchmarkHits.draw,batch.benchmarkHits.lands,batch.benchmarkHits.removal,batch.benchmarkHits.synergy,batch.benchmarkHits.finisher].map(v => Math.round(v*100/batch.runs));
+  drawBarChart('chartBenchmarks', benchLabels, benchValues, {yLabel:'Hit rate %'});
+
+  const hitLabels = Array.from({length:SHORT_TURN_VIEW+1}, (_,i)=> i===SHORT_TURN_VIEW ? `${SHORT_TURN_VIEW}+` : String(i+1));
+  const hitTurnsFor = key => { const arr = Array.from({length:SHORT_TURN_VIEW+1}, (_,i)=> batch.utilityStats[key].byTurn[String(i+1)] || 0); arr[SHORT_TURN_VIEW] += (batch.utilityStats[key].byTurn[String(SHORT_TURN_VIEW+1)] || 0) + (batch.utilityStats[key].byTurn['miss'] || 0); return arr; };
+  const rampTurns = hitTurnsFor('ramp');
+  const drawTurns = hitTurnsFor('draw');
+  const removalTurns = hitTurnsFor('removal');
+  const protectionTurns = hitTurnsFor('protection');
+  drawBarChart('chartRampTurns', hitLabels, rampTurns, {yLabel:'Games'});
+  drawBarChart('chartDrawTurns', hitLabels, drawTurns, {yLabel:'Games'});
+  drawBarChart('chartRemovalTurns', hitLabels, removalTurns, {yLabel:'Games'});
+  drawBarChart('chartProtectionTurns', hitLabels, protectionTurns, {yLabel:'Games'});
+
+  const shortLabels = Array.from({length:SHORT_TURN_VIEW+1}, (_,i)=> i===SHORT_TURN_VIEW ? `${SHORT_TURN_VIEW}+` : String(i+1));
+  const bucketAvg = (arr)=>{
+    const vals=[]; for(let t=1;t<=SHORT_TURN_VIEW;t++) vals.push(arr[t]);
+    let sum=0, count=0; for(let t=SHORT_TURN_VIEW+1;t<=FULL_SIM_TURNS;t++){ sum += arr[t]; count++; }
+    vals.push(+(sum / Math.max(1,count)).toFixed(2)); return vals;
+  };
+  drawMultiLineChart('chartUtilityHand', shortLabels, [
+    {label:'Ramp', values: bucketAvg(batch.utilityStats.hand.ramp)},
+    {label:'Draw', values: bucketAvg(batch.utilityStats.hand.draw)},
+    {label:'Removal', values: bucketAvg(batch.utilityStats.hand.removal)},
+    {label:'Protection', values: bucketAvg(batch.utilityStats.hand.protection)}
+  ], {yLabel:'Avg in hand'});
+  drawMultiLineChart('chartUtilityBattlefield', shortLabels, [
+    {label:'Ramp', values: bucketAvg(batch.utilityStats.battlefield.ramp)},
+    {label:'Draw', values: bucketAvg(batch.utilityStats.battlefield.draw)},
+    {label:'Removal', values: bucketAvg(batch.utilityStats.battlefield.removal)},
+    {label:'Protection', values: bucketAvg(batch.utilityStats.battlefield.protection)}
+  ], {yLabel:'Avg on battlefield'});
+
+  $('runSummary').textContent = [
+    `Runs: ${batch.runs}. Average mulligans taken: ${batch.avgMulligans.toFixed(2)}.`,
+    `Average commander cast turn: ${batch.avgCommander ? batch.avgCommander.toFixed(2) : 'not cast in sampled runs'}.`,
+    `Probable win / overwhelm turn: ${batch.avgWin ? batch.avgWin.toFixed(2) : 'not reached by turn ' + FULL_SIM_TURNS}.`,
+    `Utility charts show when ramp, draw, removal, and protection first appear, plus average copies in hand and on battlefield by turn.`,
+    `Benchmark hit rates are percentages of sampled games that met the turn target.`
+  ].join('\n\n');
+}
+
+async function analyze(){
+  try{
+    setStatus('Reading decklist...');
+    $('chartsPanel').style.display = 'none';
+    $('goldfishBtn').style.display = 'none';
+    const entries = parseDecklist($('decklist').value);
+    if(entries.length < 10){ alert(`Decklist not detected correctly. Found ${entries.length} card entries.`); return; }
+
+    setStatus('Fetching deck card data from Scryfall...');
+    const cards = await fetchScryfallCards(entries);
+
+    const commanderEntries = [$('commander1').value, $('commander2').value].map(s=>s.trim()).filter(Boolean).map(name => ({name, qty:1}));
+    let commanders = [];
+    if(commanderEntries.length){
+      setStatus('Fetching commander card data...');
+      commanders = await fetchScryfallCards(commanderEntries);
+    }
+
+    current.parsed = cards;
+    current.commanders = commanders;
+    current.analysis = scoreDeck(cards, commanders);
+
+    $('resultBand').style.display = '';
+    $('bracketScore').textContent = current.analysis.bracket.value;
+    $('bracketLabel').textContent = current.analysis.bracket.label;
+    $('totalScoreText').textContent = `Total category score: ${current.analysis.total} / 35`;
+    $('kpiCards').textContent = cards.length;
+    $('kpiLands').textContent = current.analysis.counts.lands;
+    $('kpiNonlands').textContent = cards.length - current.analysis.counts.lands;
+    $('kpiKarsten').textContent = current.analysis.karsten.suggested.toFixed(1);
+    $('commandFit').textContent = current.analysis.commanderFit.text;
+    $('summary').textContent = summarizeAnalysis(current.analysis);
+
+    const rc = current.analysis.counts;
+    $('roleCounts').innerHTML = [
+      ['Ramp',rc.ramp],['Draw',rc.draw],['Removal',rc.removal],['Wipes',rc.wipe],['Protection',rc.protection],
+      ['Recursion',rc.recursion],['Finishers',rc.finisher],['Synergy',rc.synergy],['Tutors',rc.tutor],['1-drop rocks',rc.rock1]
+    ].map(([k,v]) => `<div class="item"><span class="name">${escapeHtml(k)}</span><span>${v}</span></div>`).join('');
+
+    renderScores(current.analysis); benchmarkRows(cards);
+    renderSimpleList('listRamp', uniqueNames(cards, c=>c.tags && c.tags.ramp));
+    renderSimpleList('listDraw', uniqueNames(cards, c=>c.tags && c.tags.draw));
+    renderSimpleList('listRemoval', uniqueNames(cards, c=>c.tags && (c.tags.removal || c.tags.wipe)));
+    renderSimpleList('listMisc', uniqueNames(cards, c=>c.tags && (c.tags.protection || c.tags.recursion || c.tags.finisher)));
+
+    const runs = Math.max(10, +$('goldfishRuns').value || 100);
+    setStatus(`Running ${runs} goldfish simulations and building charts...`);
+    await sleep(20);
+    current.batch = runBatchGoldfish(runs);
+    renderBatchCharts(current.batch);
+    $('goldfishBtn').style.display = '';
+    setStatus('Analysis complete.', true);
+  }catch(err){
+    console.error(err);
+    setStatus('Could not finish analysis. This usually means Scryfall rate limits or a network issue. Try again.');
+    alert('Analysis failed. See console for details.');
+  }
+}
+
+function openGoldfishWindow(){
+  try{
+    if(!current.parsed || !current.parsed.length){
+      alert('Analyze the deck first so the simulator has card data to use.');
       return;
     }
-    if(typeof node === "object"){
-      // Common keys that might hold combo ingredients
-      const keys = Object.keys(node);
-      for(const k of keys){
-        const v = node[k];
-        if(Array.isArray(v)){
-          // if key name suggests it holds ingredients/cards, consider
-          const kk = k.toLowerCase();
-          if(kk.includes("card") || kk.includes("ingredient") || kk.includes("pieces")){
-            // If it's exactly two things, count it
-            const allStringsOrNamed =
-              v.length >= 2 &&
-              v.every(x =>
-                typeof x === "string" ||
-                (x && typeof x === "object" && typeof x.name === "string")
-              );
-            if(allStringsOrNamed) considerArray(v);
-          }
-        }
-        walk(v);
-      }
+    const sim = simulateGame(current.parsed, current.commanders || []);
+    const win = window.open('', '_blank');
+    if(!win){
+      alert('Your browser blocked the popup. Allow popups for this page and try again.');
+      return;
     }
-  };
-
-  walk(root);
-  return pairs;
-}
-
-function splitEarlyLateByCmc(pairs, cmcByName, earlyComboCmc){
-  const early = [];
-  const late = [];
-  for(const [a,b] of pairs){
-    const total = (cmcByName.get(a) ?? 99) + (cmcByName.get(b) ?? 99);
-    if(total <= earlyComboCmc) early.push([a,b]);
-    else late.push([a,b]);
-  }
-  return { early, late };
-}
-
-async function autoPopulateSpellbookCombosFromDeck(){
-  const deckText = $("deck").value.trim();
-  if(!deckText){
-    alert("Paste a decklist first.");
-    return;
-  }
-
-  $("spellbookStatus").textContent = "Spellbook combos: loading…";
-
-  // We need CMC to classify early/late. Fetch Scryfall first.
-  const parsed = parseDecklist(deckText);
-  setStatus(`Fetching ${parsed.unique.length} cards from Scryfall (for CMC)…`);
-  const scryCards = await fetchScryfallCards(parsed.unique);
-  $("cardsFetched").textContent = `${scryCards.length} cards fetched`;
-
-  const cmcByName = new Map();
-  for(const c of scryCards) cmcByName.set(normalizeName(c.name), c.cmc ?? 0);
-
-  const earlyComboCmc = parseInt($("earlyComboCmc").value, 10) || 6;
-
-  setStatus("Calling local Spellbook proxy…");
-  const resp = await postJson("/api/spellbook/estimate-bracket", { decklist: deckText });
-  if(!resp || resp.ok !== true){
-    $("spellbookStatus").textContent = "Spellbook combos: failed";
-    console.error(resp);
-    throw new Error(resp?.error || "Spellbook proxy returned an error.");
-  }
-
-  const data = resp.data;
-
-  // Extract all 2-card combos we can find in the response, regardless of schema.
-  const pairs = extractTwoCardPairsFromAnyJson(data);
-
-  if(!pairs.length){
-    $("spellbookStatus").textContent = "Spellbook combos: 0 extracted (see textareas for raw)";
-    $("earlyTwoCardCombos").value = "[No 2-card combos extracted]\n\nRAW RESPONSE (first ~4000 chars):\n" + JSON.stringify(data, null, 2).slice(0, 4000);
-    $("lateTwoCardCombos").value = "";
-    setStatus("Done (but nothing extracted).");
-    return;
-  }
-
-  const { early, late } = splitEarlyLateByCmc(pairs, cmcByName, earlyComboCmc);
-
-  $("earlyTwoCardCombos").value = early.map(([a,b]) => `${a} | ${b}`).join("\n");
-  $("lateTwoCardCombos").value  = late.map(([a,b]) => `${a} | ${b}`).join("\n");
-
-  $("spellbookStatus").textContent =
-    `Spellbook combos: loaded (${pairs.length} 2-card; early ${early.length}, late ${late.length})`;
-
-  setStatus("Spellbook combos loaded.");
-}
-
-/* =========================
-   Tunables
-   ========================= */
-const DEFAULT_SALT_MAP = {
-  "Smothering Tithe": 6,
-  "The One Ring": 6,
-  "Sol Ring": 4,
-  "Esper Sentinel": 4,
-  "Sensei's Divining Top": 3,
-  "Orim's Chant": 4,
-  "Vandalblast": 3
-};
-
-function seedDefaults(){
-  $("saltMap").value = Object.entries(DEFAULT_SALT_MAP).map(([k,v])=>`${k} = ${v}`).join("\n");
-  $("gameChangers").value = "";
-  $("earlyTwoCardCombos").value = "";
-  $("lateTwoCardCombos").value = "";
-}
-seedDefaults();
-
-function parseListToSet(text){
-  return new Set(text.split("\n").map(normalizeName).filter(Boolean));
-}
-
-function parseSaltMap(text){
-  const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
-  const map = {};
-  for(const line of lines){
-    const m = line.match(/^(.*?)\s*=\s*(\d+(\.\d+)?)$/);
-    if(!m) continue;
-    map[normalizeName(m[1])] = parseFloat(m[2]);
-  }
-  return map;
-}
-
-function parseTwoCardCombos(text){
-  const lines = text.split("\n").map(l=>l.trim()).filter(Boolean);
-  const pairs = [];
-  for(const line of lines){
-    const parts = line.split("|").map(p=>normalizeName(p)).filter(Boolean);
-    if(parts.length === 2) pairs.push([parts[0], parts[1]]);
-  }
-  return pairs;
-}
-
-function findComboMatches(deckNameSet, pairList){
-  const matches = [];
-  for (const [a,b] of (pairList || [])){
-    if (deckNameSet.has(a) && deckNameSet.has(b)){
-      matches.push([a,b]);
-    }
-  }
-  return matches;
-}
-
-/* =========================
-   Classifiers + scoring
-   ========================= */
-const RX = {
-  searchLibrary: /search your library/i,
-  landRamp: /search your library for (a|an) (basic )?land card/i,
-
-  draw: /\bdraw (a|two|three|four|\d+) card/i,
-  impulse: /exile the top .* you may play/i,
-
-  counter: /counter target/i,
-  spotRemoval: /(exile|destroy) target|return target .* to (its|their) owner's hand|deals? \d+ damage to target/i,
-  sacrifice: /target player sacrifices|each opponent sacrifices/i,
-  wipe: /(destroy|exile) all|each creature|each nonland permanent|all artifacts|all enchantments/i,
-  protect: /hexproof|indestructible|protection from|phase out|prevent all damage|can't be countered/i,
-
-  extraTurn: /take an extra turn|after this phase, there is an additional/i,
-
-  mld: /destroy all lands|each player sacrifices (a|two|three|\d+) lands|lands don't untap/i,
-
-  manaRock: /\{T\}:\s*Add/i,
-  treasure: /create (a|two|three|\d+) Treasure token/i,
-};
-
-function analyzeDeck(cards, opts){
-  const nameSet = new Set(cards.map(c => normalizeName(c.name)));
-
-  const deck = {
-    nameSet,
-    counts: {
-      tutors: 0,
-      interaction: 0,
-      draw: 0,
-      ramp: 0,
-      fastMana: 0,
-      extraTurns: 0,
-      mld: 0,
-      gameChangers: 0,
-      twoCardInfinite: 0,
-      earlyGameInfinite: 0,
-      saltTotal: 0,
-      saltAvg: 0,
-    },
-    hits: {
-      tutors: [],
-      interaction: [],
-      extraTurns: [],
-      mld: [],
-      gameChangers: [],
-      salt: [],
-      combosFound: [],
-      earlyCombosFound: []
-    }
-  };
-
-  const gcSet = opts.gameChangers;
-  const saltMap = opts.saltMap;
-
-  for(const c of cards){
-    const name = normalizeName(c.name);
-    const o = (c.oracle_text || "");
-    const typeLine = (c.type_line || "");
-    const mv = c.cmc ?? 0;
-
-    const isTutor = RX.searchLibrary.test(o);
-    const isLandRampTutor = RX.landRamp.test(o);
-    if(isTutor){
-      const countsAsTutor = opts.excludeLandRampFromTutors ? !isLandRampTutor : true;
-      if(countsAsTutor){
-        deck.counts.tutors++;
-        deck.hits.tutors.push(name);
-      }
-    }
-
-    if(RX.draw.test(o) || RX.impulse.test(o)) deck.counts.draw++;
-
-    const isInteraction =
-      RX.counter.test(o) || RX.spotRemoval.test(o) || RX.sacrifice.test(o) ||
-      RX.wipe.test(o) || RX.protect.test(o);
-    if(isInteraction){
-      deck.counts.interaction++;
-      deck.hits.interaction.push(name);
-    }
-
-    if(RX.extraTurn.test(o)){
-      deck.counts.extraTurns++;
-      deck.hits.extraTurns.push(name);
-    }
-
-    if(RX.mld.test(o)){
-      deck.counts.mld++;
-      deck.hits.mld.push(name);
-    }
-
-    const isRock = (typeLine.includes("Artifact") && RX.manaRock.test(o));
-    const isCheapRock = isRock && mv <= 2;
-    const isFastMana = (name === "Sol Ring") || (isRock && mv <= 1);
-    const isLandRamp = /search your library for (a|an) (basic )?land card/i.test(o) || /put a land card.*onto the battlefield/i.test(o);
-    const makesTreasure = RX.treasure.test(o);
-
-    if(isCheapRock || isLandRamp || makesTreasure) deck.counts.ramp++;
-    if(isFastMana) deck.counts.fastMana++;
-
-    if(gcSet.has(name)){
-      deck.counts.gameChangers++;
-      deck.hits.gameChangers.push(name);
-    }
-
-    if(saltMap[name] != null){
-      deck.counts.saltTotal += saltMap[name];
-      deck.hits.salt.push(`${name}(${saltMap[name]})`);
-    }
-  }
-
-  deck.counts.saltAvg = deck.counts.saltTotal / Math.max(1, cards.length);
-
-  const manualEarlyPairs = opts.manualEarlyPairs || [];
-  const manualLatePairs  = opts.manualLatePairs  || [];
-
-  const earlyMatches = findComboMatches(nameSet, manualEarlyPairs);
-  const lateMatches  = findComboMatches(nameSet, manualLatePairs);
-
-  for(const [a,b] of earlyMatches){
-    deck.counts.twoCardInfinite++;
-    deck.counts.earlyGameInfinite++;
-    deck.hits.combosFound.push(`${a} + ${b} (early)`);
-    deck.hits.earlyCombosFound.push(`${a} + ${b} (early)`);
-  }
-
-  const cmcByName = opts.cmcByName;
-  for(const [a,b] of lateMatches){
-    deck.counts.twoCardInfinite++;
-    deck.hits.combosFound.push(`${a} + ${b} (late)`);
-
-    const total = (cmcByName.get(a) ?? 99) + (cmcByName.get(b) ?? 99);
-    if(total <= opts.earlyComboCmc){
-      deck.counts.earlyGameInfinite++;
-      deck.hits.earlyCombosFound.push(`${a} + ${b} (late-list, CMC ${total})`);
-    }
-  }
-
-  return deck;
-}
-
-function computeWotcBracket(counts){
-  if(counts.mld === 0 && counts.extraTurns === 0 && counts.twoCardInfinite === 0 && counts.tutors < 3) return 1;
-  if(counts.mld === 0 && counts.extraTurns <= 2 && counts.twoCardInfinite === 0 && counts.tutors <= 3) return 2;
-  if(counts.mld === 0 && counts.extraTurns <= 2 && counts.earlyGameInfinite === 0 && counts.gameChangers <= 3) return 3;
-  return 4;
-}
-
-function scoreToDecimal(bracket, score100){
-  return Math.round((bracket + (score100/100)*0.9) * 10) / 10;
-}
-
-function computeScore(deckAnalysis, observed){
-  const c = deckAnalysis.counts;
-
-  let kickoffPts = 2;
-  if(observed.kickoffTurn <= 3) kickoffPts = 15;
-  else if(observed.kickoffTurn <= 5) kickoffPts = 12;
-  else if(observed.kickoffTurn <= 7) kickoffPts = 8;
-  else if(observed.kickoffTurn <= 9) kickoffPts = 5;
-
-  const engineMetric = c.ramp + c.draw;
-  let enginePts = 4;
-  if(engineMetric >= 18) enginePts = 15;
-  else if(engineMetric >= 12) enginePts = 12;
-  else if(engineMetric >= 8) enginePts = 8;
-
-  const speedSynergy = clamp(kickoffPts + enginePts, 0, 30);
-
-  let comboPts = 3;
-  if(c.twoCardInfinite >= 1) comboPts = 7;
-  if(c.twoCardInfinite >= 2) comboPts = 10;
-  if(c.earlyGameInfinite >= 1) comboPts = 10;
-
-  const redMetric = c.draw + c.tutors + c.gameChangers;
-  let redPts = 3;
-  if(redMetric >= 18) redPts = 10;
-  else if(redMetric >= 12) redPts = 8;
-  else if(redMetric >= 8) redPts = 6;
-
-  const wincons = clamp(comboPts + redPts, 0, 20);
-
-  let interPts = 4;
-  if(c.interaction >= 15) interPts = 20;
-  else if(c.interaction >= 12) interPts = 16;
-  else if(c.interaction >= 8) interPts = 12;
-  else if(c.interaction >= 5) interPts = 8;
-
-  const tutorPts = c.tutors >= 8 ? 10 : c.tutors >= 5 ? 7 : c.tutors >= 2 ? 5 : 2;
-  const drawPts = c.draw >= 10 ? 5 : c.draw >= 6 ? 3 : 1;
-  const consistency = clamp(tutorPts + drawPts, 0, 15);
-
-  const avgSalt = c.saltAvg;
-  let saltPts = 2;
-  if(avgSalt >= 0.20) saltPts = 10;
-  else if(avgSalt >= 0.16) saltPts = 8;
-  else if(avgSalt >= 0.12) saltPts = 6;
-  else if(avgSalt >= 0.08) saltPts = 4;
-
-  const resPts = observed.resilience === 3 ? 5 : observed.resilience === 2 ? 3 : 1;
-
-  const total = clamp(speedSynergy + wincons + interPts + consistency + saltPts + resPts, 0, 100);
-  const pressure = (observed.kickoffTurn <= 4 && c.twoCardInfinite >= 1 && c.interaction >= 12);
-
-  return { total, subs: { speedSynergy, wincons, interPts, consistency, saltPts, resPts }, pressure };
-}
-
-/* =========================
-   Rendering
-   ========================= */
-function renderResults(deckAnalysis, wotcBracket, scoreObj, decimal){
-  const c = deckAnalysis.counts;
-
-  must("finalRating").innerHTML = `${decimal.toFixed(1)} <span class="br">/5</span> <span class="br" id="finalBracket">Bracket ${wotcBracket}</span>`;
-
-  const metaBits = [
-    `Score <b class="mono">${Math.round(scoreObj.total)}/100</b>`,
-    `Tutors <b class="mono">${c.tutors}</b>`,
-    `Interaction <b class="mono">${c.interaction}</b>`,
-    `2-card combos <b class="mono">${c.twoCardInfinite}</b>`,
-    `Game changers <b class="mono">${c.gameChangers}</b>`,
-    `Salt avg <b class="mono">${c.saltAvg.toFixed(2)}</b>`
-  ];
-
-  must("finalMeta").innerHTML =
-    metaBits.join(" · ") +
-    (scoreObj.pressure ? ` · <span class="warn"><b>Pressure bump conditions met</b></span>` : "");
-
-  must("scoreBar").style.width = `${Math.round(scoreObj.total)}%`;
-
-  must("scoreLine").innerHTML =
-    `Category breakdown: ` +
-    `<span class="mono">Speed+Synergy ${scoreObj.subs.speedSynergy}/30</span> · ` +
-    `<span class="mono">Wincons ${scoreObj.subs.wincons}/20</span> · ` +
-    `<span class="mono">Interaction ${scoreObj.subs.interPts}/20</span> · ` +
-    `<span class="mono">Consistency ${scoreObj.subs.consistency}/15</span> · ` +
-    `<span class="mono">Salt ${scoreObj.subs.saltPts}/10</span> · ` +
-    `<span class="mono">Resilience ${scoreObj.subs.resPts}/5</span>`;
-
-  const rows = [
-    ["Speed + Synergy", `${pointsLabel(scoreObj.subs.speedSynergy,30)}`, "Kicks-off turn + engine density (ramp+draw)"],
-    ["Win Conditions", `${pointsLabel(scoreObj.subs.wincons,20)}`, "2-card combos + redundancy proxy"],
-    ["Interaction", `${pointsLabel(scoreObj.subs.interPts,20)}`, "Removal / counters / wipes / protection"],
-    ["Consistency", `${pointsLabel(scoreObj.subs.consistency,15)}`, "Tutors + draw"],
-    ["Salt", `${pointsLabel(scoreObj.subs.saltPts,10)}`, "Curated salt points average"],
-    ["Resilience", `${pointsLabel(scoreObj.subs.resPts,5)}`, "Observed rebuild strength"],
-  ];
-
-  must("breakdown").innerHTML =
-    `<tr><th>Category</th><th>Points</th><th>What this means</th></tr>` +
-    rows.map(r=>`<tr><td>${r[0]}</td><td>${r[1]}</td><td class="muted">${r[2]}</td></tr>`).join("");
-
-  const html =
-    listHtml("2-card combos found in this deck", deckAnalysis.hits.combosFound) +
-    listHtml("Early combos found", deckAnalysis.hits.earlyCombosFound) +
-    `<div class="hr"></div>` +
-    listHtml("Game changers (matched)", deckAnalysis.hits.gameChangers) +
-    listHtml("Tutors (matched)", deckAnalysis.hits.tutors) +
-    listHtml("Interaction (matched)", deckAnalysis.hits.interaction) +
-    listHtml("Salt hits", deckAnalysis.hits.salt) +
-    listHtml("Extra turns", deckAnalysis.hits.extraTurns) +
-    listHtml("MLD / land hate", deckAnalysis.hits.mld);
-
-  must("detectedLists").innerHTML = html;
-}
-
-/* =========================
-   UI wiring
-   ========================= */
-$("kickoffTurn").addEventListener("input", e => $("kickoffVal").textContent = e.target.value);
-$("resilience").addEventListener("input", e => $("resVal").textContent = e.target.value);
-
-$("refreshSpellbookCombosBtn").addEventListener("click", async () => {
-  try{
-    $("spellbookStatus").textContent = "Spellbook combos: loading…";
-    await autoPopulateSpellbookCombosFromDeck();
+    const body = `
+<!doctype html>
+<html><head><meta charset="utf-8"><title>Single Goldfish</title>
+<style>
+body{font-family:Arial,sans-serif;background:#07111d;color:#e5eefc;margin:0;padding:20px}
+h1,h2{margin:0 0 12px} .muted{color:#9db0c7} .card{background:#0e1a2a;border:1px solid #1d3550;border-radius:12px;padding:14px;margin:12px 0}
+ul{margin:8px 0 0 20px} pre{white-space:pre-wrap;font-family:inherit} .pill{display:inline-block;background:#14304a;border:1px solid #2a4a68;padding:4px 8px;border-radius:999px;margin:0 6px 6px 0}
+</style></head><body>
+<h1>Single goldfish</h1>
+<div class="card">
+  <div><span class="pill">Kept hand size: ${sim.keptHandSize}</span><span class="pill">Mulligans: ${sim.mulligansTaken}</span><span class="pill">Commander turn: ${sim.commandCastTurn ?? 'not cast'}</span><span class="pill">Probable win/overwhelm: ${sim.probableWinTurn ?? 'not reached by turn ' + FULL_SIM_TURNS}</span></div>
+</div>
+<div class="card"><h2>Mulligans</h2><pre>${escapeHtml(sim.mulliganLog.join('\n\n'))}</pre></div>
+${sim.turns.map(t=>`<div class="card"><h2>Turn ${t.turn}</h2><ul>${t.events.map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul><div class="muted" style="margin-top:8px">Hand: ${escapeHtml(t.hand.join(', '))}</div><div class="muted" style="margin-top:4px">Battlefield: ${escapeHtml(t.battlefield.join(', '))}</div></div>`).join('')}
+</body></html>`;
+    win.document.open();
+    win.document.write(body);
+    win.document.close();
   }catch(err){
     console.error(err);
-    $("spellbookStatus").textContent = "Spellbook combos: failed (see console)";
-    alert("Failed to auto-fetch Spellbook combos.\n\n" + err.message);
-    setStatus("Idle.");
-  }
-});
-
-/* =========================
-   Main rating flow
-   ========================= */
-const SAMPLE = `1 Sol Ring
-1 Smothering Tithe
-1 The One Ring
-1 Esper Sentinel
-1 Sensei's Divining Top
-1 Vandalblast
-1 Orim's Chant
-1 Plains
-1 Mountain`;
-
-$("loadExampleBtn").addEventListener("click", () => {
-  $("deck").value = SAMPLE;
-  updateUniqueCount();
-  setStatus("Loaded sample.");
-});
-
-async function rate(){
-  const text = $("deck").value.trim();
-  if(!text){
-    setStatus("Paste a decklist first.");
-    return;
-  }
-
-  $("rateBtn").disabled = true;
-  try{
-    setStatus("Parsing decklist…");
-    const parsed = parseDecklist(text);
-    $("uniqueCount").textContent = `${parsed.unique.length} unique`;
-
-    const gameChangers = parseListToSet($("gameChangers").value);
-    const saltMap = parseSaltMap($("saltMap").value);
-
-    // The combo boxes are your combo DB now (Spellbook-filled or manual)
-    const manualEarlyPairs = parseTwoCardCombos($("earlyTwoCardCombos").value);
-    const manualLatePairs  = parseTwoCardCombos($("lateTwoCardCombos").value);
-
-    const earlyComboCmc = parseInt($("earlyComboCmc").value, 10) || 6;
-    const excludeLandRampFromTutors = ($("excludeLandRampFromTutors").value === "yes");
-
-    setStatus(`Fetching ${parsed.unique.length} cards from Scryfall…`);
-    const scryCards = await fetchScryfallCards(parsed.unique);
-    $("cardsFetched").textContent = `${scryCards.length} cards fetched`;
-
-    const cmcByName = new Map();
-    for(const c of scryCards) cmcByName.set(normalizeName(c.name), c.cmc ?? 0);
-
-    setStatus("Classifying (tutors / interaction / salt / combos) …");
-    const analysis = analyzeDeck(scryCards, {
-      gameChangers,
-      saltMap,
-      earlyComboCmc,
-      excludeLandRampFromTutors,
-      cmcByName,
-      manualEarlyPairs,
-      manualLatePairs
-    });
-
-    setStatus("Applying bracket gates + decimal scoring…");
-    const wotcBracket = computeWotcBracket(analysis.counts);
-
-    const observed = {
-      kickoffTurn: parseInt($("kickoffTurn").value, 10),
-      resilience: parseInt($("resilience").value, 10)
-    };
-
-    const scoreObj = computeScore(analysis, observed);
-
-    let decimal = scoreToDecimal(wotcBracket, scoreObj.total);
-    if(scoreObj.pressure){
-      decimal = Math.min(wotcBracket + 0.9, Math.round((decimal + 0.3) * 10) / 10);
-    }
-
-    renderResults(analysis, wotcBracket, scoreObj, decimal);
-    setStatus("Done.");
-  }catch(err){
-    console.error(err);
-    setStatus("Error: " + err.message);
-  }finally{
-    $("rateBtn").disabled = false;
+    alert('Single goldfish failed. See console for details.');
   }
 }
 
-$("rateBtn").addEventListener("click", rate);
-
-// Initialize
-updateUniqueCount();
+$('analyzeBtn').addEventListener('click', analyze);
+$('goldfishBtn').addEventListener('click', openGoldfishWindow);
+$('sampleBtn').addEventListener('click', ()=>{
+  $('deckName').value = 'Temur Creature Storm';
+  $('commander1').value = `Eshki, Temur's Roar`;
+  $('commander2').value = '';
+  $('decklist').value = `1 Alena, Kessig Trapper
+1 Ancient Silver Dragon
+1 Ancient Tomb
+1 Animar, Soul of Elements
+1 Anzrag, the Quake-Mole
+1 Apex Devastator
+1 Arid Mesa
+1 Arixmethes, Slumbering Isle
+1 Biophagus
+1 Birds of Paradise
+1 Bloodstained Mire
+1 Bloom Tender
+1 Boseiju, Who Endures
+1 Breeding Pool
+1 Bugenhagen, Wise Elder
+1 Canopy Gargantuan
+1 Castle Garenbrig
+1 Chimil, the Inner Sun
+1 Command Tower
+1 Consecrated Sphinx
+1 Dawnglade Regent
+1 Defiler of Vigor
+1 Delighted Halfling
+1 Dreamtide Whale
+1 Equilibrium
+1 Fanatic of Rhonas
+1 Fangorn Forest
+1 Flooded Strand
+1 Forest
+1 Gaea's Cradle
+1 Ghalta, Primal Hunger
+1 Goreclaw, Terror of Qal Sisma
+1 Gwenna, Eyes of Gaea
+1 Hinterland Harbor
+1 Ilysian Caryatid
+1 In Search of Greatness
+1 Inga and Esika
+1 Intet, the Dreamer
+1 Island
+1 Kessig Wolf Run
+1 Ketria Triome
+1 Laboratory Maniac
+1 Maelstrom Wanderer
+1 Mightform Harmonizer
+1 Misty Rainforest
+1 Monstrous Vortex
+1 Mosswort Bridge
+1 Mountain
+1 Niv-Mizzet, Visionary
+1 Omen Machine
+1 Oracle's Vault
+1 Otawara, Soaring City
+1 Outcaster Trailblazer
+1 Pathbreaker Ibex
+1 Planetarium of Wan Shi Tong
+1 Polluted Delta
+1 Possibility Storm
+1 Purphoros, God of the Forge
+1 Railway Brawler
+1 Rashmi, Eternities Crafter
+1 Rejuvenating Springs
+1 Reliquary Tower
+1 Roaming Throne
+1 Rockfall Vale
+1 Rootbound Crag
+1 Sab-Sunen, Luxa Embodied
+1 Scalding Tarn
+1 Selvala, Heart of the Wilds
+1 Silverback Elder
+1 Slumbering Trudge
+1 Solphim, Mayhem Dominus
+1 Spider Manifestation
+1 Spire Garden
+1 Steam Vents
+1 Stomping Ground
+1 Studious First-Year
+1 Sulfur Falls
+1 Sunbird's Invocation
+1 Surrak and Goreclaw
+1 Surrak Dragonclaw
+1 Taiga
+1 Temur Battlecrier
+1 Terror of the Peaks
+1 The Great Henge
+1 The Skullspore Nexus
+1 Tishana, Voice of Thunder
+1 Training Center
+1 Tropical Island
+1 Uro, Titan of Nature's Wrath
+1 Vaultborn Tyrant
+1 Verdant Catacombs
+1 Vibrance
+1 Volcanic Island
+1 Wild Evocation
+1 Windswept Heath
+1 Wistfulness
+1 Wooded Foothills
+1 Xenagos, God of Revels
+1 Zopandrel, Hunger Dominus
+1 Eshki, Temur's Roar`;
+});
 </script>
 </body>
 </html>
