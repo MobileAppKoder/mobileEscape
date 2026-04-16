@@ -49,70 +49,96 @@ Sol Ring x1
 
 The deck is evaluated using **7 core categories**, each scored from **0–5**.
 
-### 1. Mana Speed
-How quickly the deck ramps into meaningful plays.
+---
 
-- **0** — Very slow, clunky  
-- **1** — Minimal ramp  
-- **2** — Normal casual ramp  
-- **3** — Good ramp, reliable acceleration  
-- **4** — Fast starts, efficient mana  
-- **5** — Explosive fast mana  
+### 1. Mana Speed
+
+| Score | Meaning |
+|------|--------|
+| 0 | Very slow, clunky, low ramp |
+| 1 | A little ramp, often behind |
+| 2 | Normal casual ramp package |
+| 3 | Good ramp, reliable acceleration |
+| 4 | Fast starts, efficient mana base |
+| 5 | Fast mana, explosive starts |
 
 ---
 
 ### 2. Card Advantage & Consistency
-How well the deck keeps drawing and finding resources.
 
-- **0** — Runs out of cards  
-- **3** — Strong draw engines  
-- **5** — Tutors + redundancy + filtering  
+| Score | Meaning |
+|------|--------|
+| 0 | Runs out of cards constantly |
+| 1 | A little draw, inconsistent |
+| 2 | Normal casual draw |
+| 3 | Strong draw engines, good flow |
+| 4 | Excellent draw, filtering, recursion |
+| 5 | Tutors + draw + redundancy |
 
 ---
 
 ### 3. Interaction
-How effectively the deck can stop opponents.
 
-- **0** — Almost none  
-- **3** — Solid interaction suite  
-- **5** — Highly efficient, layered interaction  
+| Score | Meaning |
+|------|--------|
+| 0 | Barely any removal |
+| 1 | A few answers, often too late |
+| 2 | Normal casual removal |
+| 3 | Good interaction spread |
+| 4 | Efficient answers, strong interaction |
+| 5 | High interaction density, very efficient |
 
 ---
 
 ### 4. Commander Dependence
-How much the deck relies on its commander.
 
-- **0** — Deck fails without commander  
-- **3** — Works but better with commander  
-- **5** — Fully independent shell  
+| Score | Meaning |
+|------|--------|
+| 0 | Deck barely works without commander |
+| 1 | Major collapse without commander |
+| 2 | Commander is very important |
+| 3 | Works without commander |
+| 4 | Strong shell independent of commander |
+| 5 | Commander optional / not needed |
 
 ---
 
 ### 5. Win Speed
-How fast the deck realistically wins.
 
-- **0** — Turn 12+  
-- **3** — Turn 6–9  
-- **5** — Turn 3–5  
+| Score | Meaning |
+|------|--------|
+| 0 | Turn 12+ |
+| 1 | Turn 10–12 |
+| 2 | Turn 8–10 |
+| 3 | Turn 6–9 |
+| 4 | Turn 4–7 |
+| 5 | Turn 3–5 |
 
 ---
 
 ### 6. Win Quality
-How reliable and compact the win condition is.
 
-- **0** — No clear win plan  
-- **3** — Strong synergy-based finish  
-- **5** — Deterministic combo  
+| Score | Meaning |
+|------|--------|
+| 0 | No clear win plan |
+| 1 | Wins by random combat |
+| 2 | Clear plan but slow/fragile |
+| 3 | Strong synergy finish |
+| 4 | Compact, reliable win lines |
+| 5 | Deterministic combo |
 
 ---
 
 ### 7. Resilience
-How well the deck recovers from disruption.
 
-- **0** — Dies to one wipe  
-- **3** — Can rebuild  
-- **5** — Extremely resilient  
-
+| Score | Meaning |
+|------|--------|
+| 0 | One wipe ends the game |
+| 1 | Struggles after interaction |
+| 2 | Some rebuild potential |
+| 3 | Good recursion/recovery |
+| 4 | Strong protection and rebuild |
+| 5 | Very hard to stop permanently |
 ---
 
 ## 🧮 Bracket System
