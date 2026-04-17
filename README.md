@@ -1,414 +1,386 @@
-# 🧪 COMMANDERSCORE: FULL SYSTEM README
+# 🧪 CommandScore — Full Design, Evolution, and Algorithms (Comprehensive README)
 
-This document explains EVERY part of the CommanderScore Deck Analyzer.
-
----
-
-========================
-CORE IDEA
-========================
-
-This tool produces a TRUE CONTINUOUS POWER RATING.
-
-It is NOT a bracket system.
-It is NOT capped at 5.
-
-It is a PERFORMANCE MODEL.
-
-Final Rating Range:
-1.0 → infinity (practically 1–6+)
+> This document captures the **origin, evolution, full architecture, and all calculations** behind CommandScore.
 
 ---
 
-========================
-WHAT THE TOOL MEASURES
-========================
+# 🧠 ORIGIN OF THE IDEA
 
-The tool answers:
+The tool started as a **Commander bracket rater** inspired by WotC bracket discussions.
 
-"What does this deck actually do over time?"
+Initial goals:
+- Take a decklist
+- Assign a bracket (1–5)
+- Provide a “power level” score
 
-It does this using:
-
-1. STRUCTURE (Deck Construction)
-2. CONSISTENCY (Benchmarks)
-3. PERFORMANCE (100 Goldfish Games)
-
----
-
-========================
-THREE CORE PILLARS
-========================
-
-1. CATEGORY SCORE (0–35)
-2. BENCHMARK COVERAGE (0–1)
-3. GOLDFISH PERFORMANCE (0–1)
+Problem discovered early:
+- Traditional brackets are **too coarse**
+- Decks inside the same bracket vary wildly
+- Real gameplay performance ≠ theoretical deck strength
 
 ---
 
-========================
-CATEGORY SYSTEM (0–35)
-========================
+# ⚠️ PROBLEM WITH TRADITIONAL SYSTEMS
 
-Each category is scored 0–5:
+Early observations:
 
-Mana Speed
-- ramp
-- rocks
-- dorks
-- fast mana
+- “Bracket 4” decks ranged from:
+  - barely optimized casual
+  - to near cEDH
 
-Card Advantage
-- draw spells
-- engines
-- tutors
+- Decks labeled as “Bracket 3” could outperform “Bracket 4” decks
 
-Interaction
-- removal
-- board wipes
-- counters
-- bounce / exile / disruption
-
-Commander Dependence
-- how much deck relies on commander
-
-Win Speed
-- how early deck wins
-
-Win Quality
-- reliability of win condition
-
-Resilience
-- recursion
-- protection
-- rebuild ability
-
-TOTAL MAX = 35
+Conclusion:
+> **Brackets alone are not sufficient to describe power.**
 
 ---
 
-========================
-CATEGORY NORMALIZATION
-========================
+# 🔄 EVOLUTION OF THE SYSTEM
 
-Category Score becomes:
+## Phase 1 — Static Deck Analysis
+- Count ramp, draw, removal
+- Assign category scores
+- Produce bracket
 
-Category % = Total / 35
-
-Example:
-24 / 35 = 0.685
-
----
-
-========================
-BENCHMARK SYSTEM
-========================
-
-Benchmarks measure consistency.
-
-Targets:
-
-T1 ramp → 16
-T2 ramp → 14
-T3 draw → 12
-T4 lands → 41
-T6 interaction → 10
-T8 finisher → 5
+Problem:
+- No real gameplay data
+- Could not measure consistency
 
 ---
 
-========================
-BENCHMARK CALCULATION
-========================
+## Phase 2 — Benchmark System
+Added probability targets:
+
+- T1 ramp
+- T2 ramp
+- T3 draw
+- T4 lands
+- T6 interaction
+- T8 finisher
+
+Purpose:
+> Measure **consistency**, not just presence
+
+---
+
+## Phase 3 — Goldfish Simulation
+Major breakthrough.
+
+Added:
+- 100 simulated games
+- turn-by-turn progression
+- mulligan logic
+- resource tracking
+
+Result:
+> Now measuring **real performance over time**
+
+---
+
+## Phase 4 — Probable Win / Overwhelm
+
+Initially:
+- triggered by big creature or finisher
+
+Problem:
+- too simplistic
+
+Upgraded to:
+- board state evaluation
+- resource analysis
+- engine detection
+
+---
+
+## Phase 5 — Board State Engine
+
+Three tiers introduced:
+
+- Pressure
+- Overwhelm
+- Likely Win
+
+This replaced simple “win detection”.
+
+---
+
+## Phase 6 — Early Pressure System
+
+Tracked:
+- Turn 1 wins
+- Turn 2 wins
+- Turn 3 wins
+
+Purpose:
+> Measure **explosiveness**
+
+---
+
+## Phase 7 — Game Changer Integration
+
+Replaced “synergy” metric.
+
+Using:
+- Scryfall `game_changer` flag
+
+Purpose:
+- align with WotC philosophy
+- detect high-impact cards
+
+---
+
+## Phase 8 — Removing Bracket Floors
+
+Originally:
+- Game Changers forced Bracket 4
+
+Problem:
+- compressed ratings
+- lost nuance
+
+Solution:
+> Removed hard floors → moved to **modifiers**
+
+---
+
+## Phase 9 — Continuous Rating System
+
+Final breakthrough:
+
+- Ratings no longer capped at 5
+- Fully continuous scale introduced
+
+Result:
+> **4.1, 4.8, 5.3, 5.7 all possible**
+
+---
+
+# 📊 FINAL SYSTEM OVERVIEW
+
+The system combines:
+
+1. Category Score
+2. Benchmark Coverage
+3. Goldfish Performance
+4. Game Changer Modifier
+5. Early Pressure Modifier
+
+---
+
+# 🧮 FULL ALGORITHM
+
+## Step 1 — Category Score
+
+Each category scored 0–5.
+
+Total max = 35
+
+```
+Category Score = Total / 35
+```
+
+---
+
+## Step 2 — Benchmark Coverage
 
 For each benchmark:
 
-% = (Deck Count / Target) * 100
+```
+Percent = DeckCount / Target
+Capped at 1.0
+```
 
-Example:
-2 / 16 = 12.5%
+Average all benchmarks:
 
-Each % is capped at 100%.
-
----
-
-========================
-BENCHMARK RATINGS
-========================
-
-85%+ = Excellent
-65–85% = Close
-50–65% = Good enough
-35–50% = Not enough
-<35% = Bad
+```
+Benchmark Score = avg(all benchmark %)
+```
 
 ---
 
-========================
-BENCHMARK SCORE
-========================
+## Step 3 — Goldfish Performance
 
-Convert each benchmark to 0–1:
+Derived from:
 
-Then average all benchmarks.
+- average win turn
+- mulligan frequency
+- resource curve
+- board dominance
 
-Example:
-(0.7 + 0.6 + 0.5 + 0.8 + 0.4 + 0.3) / 6
-
----
-
-========================
-GOLDFISH SYSTEM
-========================
-
-Runs 100 simulated games.
-
-Each game:
-- shuffle deck
-- draw 7
-- mulligan logic
-- simulate turns 1–20
+Normalized to 0–1
 
 ---
 
-========================
-WHAT GOLDFISH TRACKS
-========================
+## Step 4 — Blend Core Scores
 
-- mulligans
-- lands played
-- ramp timing
-- draw timing
-- interaction availability
-- commander cast turn
-- board state
-- probable win / overwhelm turn
+```
+Base Score =
+(0.55 × Category)
++ (0.20 × Benchmark)
++ (0.25 × Goldfish)
+```
 
 ---
 
-========================
-BOARD STATE SYSTEM
-========================
+## Step 5 — Convert to Rating
 
-Each turn evaluates:
+```
+Points = Base Score × 35
+```
 
-1. RESOURCE SCORE
-- mana available
-- cards in hand
-
-2. BOARD POWER
-- creatures
-- total power
-
-3. ENGINE VALUE
-- draw engines
-- recursion
-
-4. FINISHER PRESENCE
-- in hand or board
+Converted to decimal rating.
 
 ---
 
-========================
-STATE TIERS
-========================
+# ⚡ EARLY PRESSURE ALGORITHM
 
-Pressure → strong but not winning
-Overwhelm → very hard to lose
-Likely Win → game effectively over
-
----
-
-========================
-PROBABLE WIN TRACKING
-========================
-
-For each game, record turn where:
-- overwhelm OR win state reached
-
-Store distribution across 100 games.
-
----
-
-========================
-EARLY PRESSURE SYSTEM
-========================
-
-Track:
-
-T1 wins
-T2 wins
-T3 wins
-
----
-
-EARLY PRESSURE CALCULATION
-
+```
 Early Wins = T1 + T2 + T3
+```
 
-Example:
-7 + 4 + 3 = 14
+Bonus:
 
----
-
-EARLY PRESSURE BONUS
-
+```
 0–4 → +0.0
 5–8 → +0.1
 9–12 → +0.2
 13–16 → +0.3
 17+ → +0.4
+```
 
 ---
 
-========================
-GAME CHANGER SYSTEM
-========================
+# 💥 GAME CHANGER ALGORITHM
 
-Uses Scryfall flag: game_changer
+Count cards where:
 
-Counts total Game Changers.
+```
+card.game_changer == true
+```
 
----
+Apply modifier based on count.
 
-GAME CHANGER EFFECT
-
-They DO NOT set bracket.
-
-They DO:
-- add modifier pressure
-- increase rating
+No flooring.
 
 ---
 
-========================
-WOTC SIGNAL (REFERENCE ONLY)
-========================
+# ⚡ COMPETITIVE THRESHOLD
 
-0 GC → Bracket 1–2
-1–3 GC → Bracket 3
-4+ GC → Bracket 4–5
+```
+If T1 wins ≥ 8:
+    rating = max(rating, 5.0)
+```
 
-This is informational only.
-
----
-
-========================
-COMPETITIVE THRESHOLD
-========================
-
-If:
-
-Turn 1 wins ≥ 8
-
-Then:
-
-Minimum rating = 5.0
-
-BUT:
-Modifiers still apply after.
+Then continue applying modifiers.
 
 ---
 
-========================
-CORE FORMULA
-========================
+# 📈 GRAPH SYSTEMS
 
-Final Score =
-
-(0.55 × Category)
-+ (0.20 × Benchmark)
-+ (0.25 × Goldfish)
+The app generates multiple graphs:
 
 ---
 
-========================
-CONVERT TO RATING
-========================
+## 1. Win / Overwhelm Distribution
 
-Points = Final Score × 35
+Tracks:
+- Turn 1–20
+- Frequency of probable win
 
-Convert to decimal rating.
-
----
-
-========================
-FINAL MODIFIERS
-========================
-
-Apply:
-
-+ Game Changer modifier
-+ Early Pressure modifier
+Used for:
+- speed detection
+- early pressure
 
 ---
 
-========================
-FINAL RULES
-========================
+## 2. Resource Curve Graph
 
-- NO bracket flooring at 4
-- Rating is continuous
-- Can exceed 5.0
-- 5.0 is only a minimum for extreme decks
+Tracks over turns:
+- cards in hand
+- mana available
 
----
-
-========================
-EXAMPLE 1
-========================
-
-Category = 0.69
-Benchmark = 0.72
-Goldfish = 0.38
-
-Final = 0.6185
-
-Points = 21.65
-
-Base Rating ≈ 4.1
-
-+ GC = +0.3
-+ Pressure = +0.4
-
-Final = 4.8
+Purpose:
+> Evaluate consistency
 
 ---
 
-========================
-EXAMPLE 2
-========================
+## 3. Role Hit Graphs
 
-Base = 4.9
+Tracks when deck achieves:
 
-T1 wins = 8
-
-→ floor to 5.0
-
-+ modifiers
-
-Final = 5.3
+- ramp online
+- draw online
+- interaction available
 
 ---
 
-========================
-EXAMPLE 3
-========================
+## 4. Mulligan Distribution
 
-Game Changers = 2
+Tracks:
+- number of mulligans per game
 
-Base = 3.9
-Pressure = +0.2
-
-Final = 4.1
+Purpose:
+> Detect inconsistency
 
 ---
 
-========================
-CARD BUCKETS
-========================
+# 🧠 BOARD STATE ALGORITHM
 
-Cards can have multiple roles:
+Each turn calculates:
+
+---
+
+## Resource Score
+
+```
+mana + cards in hand
+```
+
+---
+
+## Board Power
+
+```
+sum of creature power
++ number of creatures
+```
+
+---
+
+## Engine Score
+
+- draw engines
+- recursion engines
+
+---
+
+## Finisher Score
+
+- finisher in hand or board
+- playable with current mana
+
+---
+
+## Total Board Score
+
+Combined weighted score.
+
+---
+
+## State Thresholds
+
+```
+Score < X → Normal
+Score ≥ X → Pressure
+Score ≥ Y → Overwhelm
+Score ≥ Z → Likely Win
+```
+
+---
+
+# 🧩 CARD CLASSIFICATION
+
+Cards assigned to multiple roles:
 
 - Land
 - Ramp
@@ -417,46 +389,65 @@ Cards can have multiple roles:
 - Wipes
 - Protection
 - Recursion
-- Finishers
-- Tutors
+- Finisher
+- Tutor
+
+Classification uses:
+- oracle text
+- keywords
+- heuristics
 
 ---
 
-========================
-MANUAL OVERRIDE
-========================
+# ✏️ USER OVERRIDES
 
-User can adjust role counts manually.
-
-Then re-run analysis.
+Users can:
+- manually adjust role counts
+- rerun analysis
 
 ---
 
-========================
-MANA BASE FORMULA
-========================
+# 📐 MANA BASE ALGORITHM
 
+Karsten Formula:
+
+```
 31.42 + (3.13 × AMV) − (0.28 × Ramp)
+```
 
 ---
 
-========================
-LIMITATIONS
-========================
+# ⚠️ LIMITATIONS
 
-- heuristic system
 - no opponent simulation
-- no meta context
-- imperfect card classification
+- heuristic win detection
+- imperfect classification
+- no meta awareness
 
 ---
 
-========================
-FINAL STATEMENT
-========================
+# 🎯 FINAL PHILOSOPHY
 
 This system measures:
 
 REAL PERFORMANCE
 
-Not theory.
+Not:
+- ideal draws
+- theory
+- assumptions
+
+---
+
+# 🏁 FINAL RESULT
+
+A system that produces:
+
+- continuous ratings
+- real gameplay insight
+- measurable consistency
+- meaningful deck comparison
+
+---
+
+END OF DOCUMENT
