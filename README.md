@@ -1,53 +1,67 @@
 # 🧪 Commander Deck Analyzer & Goldfish Simulator
 
-A single-page Commander deck analysis tool that evaluates **structure, consistency, and real gameplay performance** to produce a **true bracket decimal rating (1.0 – 5.0)**.
+A high-fidelity Commander deck analysis tool that evaluates **deck construction, consistency, and real gameplay performance** to produce a **true bracket decimal rating (1.0 – 5.0)**.
 
-This tool does **not** rate your deck based on theory or ideal hands — it evaluates what your deck actually does over time.
+This tool is designed to answer one question:
+
+> **What does your deck actually do, consistently, over time?**
+
+Not:
+- your best draw
+- your perfect hand
+- your theoretical ceiling
+
+But your **real performance profile across 100 games**.
 
 ---
 
 # ⚙️ Core Philosophy
 
-> **Rate the deck you play — not the one you imagine.**
+This system is built on three principles:
 
-This system combines:
-- Deck construction quality
-- Probability-based benchmarks
-- Simulated gameplay (100 goldfish games)
+### 1. Reality over theory
+Decks are evaluated using **100 simulated games (goldfish)** — not assumptions.
 
-Into a single, blended rating.
+### 2. Structure matters
+Deck construction (ramp, draw, interaction, etc.) defines consistency.
+
+### 3. Speed + consistency = power
+Fast decks that do not consistently perform are not rated highly.
 
 ---
 
-# 🧠 The Three Pillars of Evaluation
+# 🧠 Three Pillars of Evaluation
 
-The final rating is derived from **three independent signals**:
+The final rating is derived from three independent signals:
 
-## 1. Category Score (Structural Power)
-## 2. Benchmark Coverage (Consistency Targets)
-## 3. Goldfish Performance (Actual Gameplay)
+### 1. Category Score (Structural Power)
+### 2. Benchmark Coverage (Consistency Targets)
+### 3. Goldfish Performance (Actual Gameplay)
 
-Each signal is normalized and blended into a final result.
+These are blended into a single **true bracket rating**.
 
 ---
 
 # 🧮 Bracket Rating System (Foundation)
 
-The system is based on **7 core categories**, each scored from **0–5**:
+The system evaluates 7 categories, each scored 0–5:
 
-| Category | Description |
-|--------|------------|
+| Category | What It Measures |
+|--------|------------------|
 | Mana Speed | Ramp, fast mana, acceleration |
 | Card Advantage | Draw, filtering, tutors |
 | Interaction | Removal, wipes, counters, disruption |
-| Commander Dependence | How required the commander is |
+| Commander Dependence | Reliance on commander |
 | Win Speed | How fast the deck wins |
-| Win Quality | Reliability of the win condition |
+| Win Quality | Reliability of win condition |
 | Resilience | Recovery, protection, recursion |
 
-### Total Score MAX = 35
+### Total Score Max = 35
 
-### Base Bracket Mapping
+
+---
+
+## Base Bracket Mapping
 
 | Score | Bracket |
 |------|--------|
@@ -59,9 +73,9 @@ The system is based on **7 core categories**, each scored from **0–5**:
 
 ---
 
-# 🔢 Decimal System
+## Decimal System
 
-The decimal refines placement inside the bracket:
+The decimal refines placement:
 
 | Decimal | Meaning |
 |--------|--------|
@@ -73,9 +87,9 @@ The decimal refines placement inside the bracket:
 
 ---
 
-# 📊 Benchmark System
+# 📊 Benchmark System (Consistency Engine)
 
-Benchmarks define how reliably a deck hits key gameplay milestones.
+Benchmarks measure how reliably a deck hits key milestones.
 
 ## Targets
 
@@ -85,17 +99,15 @@ Benchmarks define how reliably a deck hits key gameplay milestones.
 | T2 | Ramp | 14 |
 | T3 | Card draw | 12 |
 | T4 | 4+ lands | 41 lands |
-| T6 | Removal | 10 |
-| T7 | Synergy (3+) | 30 |
+| T6 | Interaction | 10 |
 | T8 | Finisher | 5 |
 
 ---
 
-## Benchmark Calculation
+## Benchmark Formula
+% = (Deck Count ÷ Target) × 100
 
-Each benchmark is evaluated as: % = (Deck Count ÷ Target Count) × 100
-
-Example: 2 ramp pieces / 16 target = 12.5%
+Example: 2 ramp / 16 target = 12.5%
 
 
 ---
@@ -114,131 +126,210 @@ Example: 2 ramp pieces / 16 target = 12.5%
 
 ## Benchmark Coverage Score
 
-Each benchmark is:
+Each benchmark:
 - capped at 100%
-- converted to decimal (0–1)
-- averaged across all benchmarks
+- converted to 0–1
+- averaged
 
 ---
 
-# 🎲 Goldfish Simulation
+# 🎲 Goldfish Simulation (100 Games)
 
-The tool runs **100 simulated games** using:
+The engine simulates 100 games using:
 
-- Random shuffle
-- Opening hand logic
-- Mulligan rules
-- Turn-by-turn play through turn 20
-- Ramp prioritization
-- Commander casting priority
-
----
-
-## Goldfish Metrics
-
-Tracked metrics include:
-
-- Mulligan frequency
-- Commander cast turn
-- Ramp / draw / removal timing
-- Resource availability (hand + battlefield)
-- Probable win / overwhelm turn
+- randomized shuffle
+- opening hand draw
+- mulligan logic
+- land drop priority
+- ramp-first casting logic
+- commander priority casting
+- turn progression through turn 20
 
 ---
 
-## Goldfish Performance Score
+## What It Tracks
 
-Goldfish performance is calculated from:
-
-- Early curve success (T1–T4)
-- Resource consistency
-- Commander deployment speed
-- Win timing distribution
-- Mulligan penalties
-
-Normalized into a **0–1 score**
+- mulligans taken
+- commander cast turn
+- ramp timing
+- draw timing
+- interaction availability
+- hand + battlefield resources
+- probable win / overwhelm turn
 
 ---
 
-# 🧪 True Bracket Algorithm (IMPORTANT)
+## Probable Win / Overwhelm
 
-The final rating is NOT just the category score.
+This is a heuristic signal that estimates:
 
-It is a **blended model**:
+> “At this point, the deck likely wins or becomes unstoppable.”
+
+Tracked per turn across 100 games.
+
+---
+
+# ⚡ Early Pressure System (CRITICAL)
+
+This is the most important upgrade in the model.
+
+It measures how often your deck wins early.
+
+---
+
+## Early Win Data
+
+From 100 games:
+- T1 = wins on turn 1
+- T2 = wins on turn 2
+- T3 = wins on turn 3
+
+Example:
+T1 = 7
+T2 = 4
+T3 = 3
+
+
+---
+
+## Early Pressure Score
+Early Wins = T1 + T2 + T3
+
+Example:
+7 + 4 + 3 = 14%
+
+
+---
+
+## Early Pressure Bonus
+
+| Early Wins | Bonus |
+|-----------|------|
+| 0–4 | +0.0 |
+| 5–8 | +0.1 |
+| 9–12 | +0.2 |
+| 13–16 | +0.3 |
+| 17+ | +0.4 |
+
+This is applied **only to Bracket 4+ decks**.
+
+---
+
+# 🧩 Game Changer System (WotC Alignment)
+
+Game Changers are pulled directly from Scryfall (`game_changer = true`).
+
+---
+
+## Game Changer Rules
+
+| Count | Meaning |
+|------|--------|
+| 0 | Bracket 1–2 compatible |
+| 1–3 | Bracket 3 signal |
+| 4+ | Bracket 4–5 signal |
+
+---
+
+## Bracket Enforcement
+
+- **4+ Game Changers → minimum Bracket 4**
+- **8+ Turn 1 wins → forced Bracket 5**
+
+---
+
+## Why This Matters
+
+Game Changers:
+- are curated by Wizards
+- represent powerful, format-warping cards
+- act as a **floor, not the full rating**
+
+---
+
+# 🧮 True Rating Algorithm (FULL DETAIL)
+
+This is the full calculation chain:
+
+---
+
+## Step 1: Normalize Category Score
+Category Score = Total / 35
+
+
+---
+
+## Step 2: Benchmark Coverage
+Benchmark Score = average of capped benchmark %
+
+
+---
+
+## Step 3: Goldfish Performance
+
+Derived from:
+- win timing
+- resource consistency
+- mulligans
+- commander speed
+
+Normalized to 0–1.
+
+---
+
+## Step 4: Blend Scores
 Final Score =
-(Category Score × 0.55) +
-(Benchmark Coverage × 0.20) +
-(Goldfish Performance × 0.25)
+(0.55 × Category) +
+(0.20 × Benchmark) +
+(0.25 × Goldfish)
 
 
 ---
 
-## Step-by-Step Calculation
-
-### 1. Normalize Category Score
-Category % = Total Category Points / 35
-
----
-
-### 2. Calculate Benchmark Coverage
-Each benchmark % → capped at 100%
-Average all → Benchmark Score (0–1)
-
----
-
-### 3. Calculate Goldfish Score
-Blend of:
-- Curve success
-- Commander timing
-- Win timing
-- Mulligans
-→ normalized 0–1
-
----
-
-### 4. Blend Scores
-Final % = (0.55 × Category) + (0.20 × Benchmark) + (0.25 × Goldfish)
-
----
-
-### 5. Convert to Bracket Score
-Final Points = Final % × 35
-
-
-Then map to bracket tiers.
-
----
-
-### 6. Assign Decimal
-
-Decimal is adjusted using:
-- Benchmark strength
-- Goldfish consistency
-- Proximity to next bracket
-
----
-
-## Example
-
-Category Score: 69%
-Benchmark Coverage: 72%
-Goldfish Performance: 38%
-
-Final = (0.55 × 0.69) + (0.20 × 0.72) + (0.25 × 0.38)
-= 0.3795 + 0.144 + 0.095
-= 0.6185
-
-Final Points = 0.6185 × 35 ≈ 21.6
-
-→ Bracket 3
-→ Decimal adjusted → 3.7
+## Step 5: Convert to Bracket Points
+Points = Final Score × 35
 
 
 ---
 
-# 🧩 Card Bucket System
+## Step 6: Assign Base Bracket
 
-Cards are classified into multiple roles (not exclusive):
+Use bracket table.
+
+---
+
+## Step 7: Apply Game Changer Floor
+if GC ≥ 4 → min bracket = 4
+
+
+---
+
+## Step 8: Apply Early Pressure
+Add decimal bonus (0.0–0.4)
+
+
+---
+
+## Step 9: Check Forced Bracket 5
+if T1 ≥ 8 → Bracket 5
+
+
+---
+
+## Final Output
+
+Example:
+Base: 4.0
+
+Early Pressure: +0.4
+Final: 4.4
+
+
+---
+
+# 🧩 Card Buckets
+
+Cards can belong to multiple buckets:
 
 - Lands
 - Ramp / rocks / dorks
@@ -248,19 +339,18 @@ Cards are classified into multiple roles (not exclusive):
 - Protection
 - Recursion
 - Finishers
-- Synergy pieces
-- Tutors / selection
+- Synergy
+- Tutors
 
 ---
 
-## Important Notes
+## Important
 
-- Cards can belong to **multiple buckets**
-- Classification is based on:
-  - Oracle text
-  - Type line
-  - Keywords
-- Priority logic prevents misclassification (e.g. wipes ≠ finishers)
+- Multi-tag system (not exclusive)
+- Based on:
+  - oracle text
+  - keywords
+  - type line
 
 ---
 
@@ -268,43 +358,36 @@ Cards are classified into multiple roles (not exclusive):
 
 Users can:
 - override role counts
-- reanalyze using adjusted values
+- reanalyze with new values
 
-This allows correction of:
-- edge-case cards
-- tribal synergies
-- commander-specific interactions
+This allows:
+- correcting edge cases
+- tribal synergy adjustments
+- commander-specific tuning
 
 ---
 
-# 📐 Mana Base Calculation
-
-Uses the **Frank Karsten Formula**:
+# 📐 Mana Base (Karsten Formula)
 31.42 + (3.13 × AMV) − (0.28 × Ramp)
 
 
-Outputs a **recommended land count**
+Outputs recommended land count.
 
 ---
 
 # ⚠️ Limitations
 
-- This is a heuristic system, not a full rules engine
-- Card classification is not perfect
-- Goldfish simulation approximates gameplay
-- Meta context is not considered
+- Not a full MTG rules engine
+- Heuristic classification
+- Goldfish ≠ real multiplayer interaction
+- Meta context not included
 
 ---
 
 # 🎯 Final Thought
 
-This tool is designed to answer one question:
+This tool doesn’t tell you how strong your deck *can* be.
 
-> **What does your deck actually do, consistently, over time?**
+It tells you:
 
-Not:
-- your best game
-- your luckiest draw
-- your imagined ceiling
-
-But your **real performance profile**.
+> **How strong your deck actually is.**
