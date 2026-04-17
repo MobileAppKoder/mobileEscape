@@ -74,6 +74,16 @@ input[type=range]{padding:0}
 .chart-card h4{margin:0 0 8px;font-size:14px}
 canvas{width:100%;height:280px;background:rgba(0,0,0,.12);border-radius:12px}
 footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
+
+.saved-decks-panel{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03)}
+.saved-decks-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.saved-deck-btn{appearance:none;border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:700}
+.saved-deck-btn:hover{background:rgba(125,211,252,.12)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal-backdrop.show{display:flex}
+.modal-card{width:min(920px,100%);max-height:80vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+
 </style>
 </head>
 <body>
@@ -156,8 +166,16 @@ footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
 
       <div class="toolbar">
         <button id="analyzeBtn">Analyze deck</button>
+        <button class="secondary" id="saveDeckBtn">Save deck</button>
+        <button class="secondary" id="showSavedDecksBtn">Load saved deck</button>
+        <button class="ghost" id="deleteCurrentDeckBtn">Delete current saved deck</button>
         <button class="secondary" id="sampleBtn">Load sample deck</button>
         <button class="ghost" id="goldfishBtn" style="display:none">Run single goldfish now</button>
+      </div>
+      <div class="saved-decks-panel">
+        <div><strong>Saved decks</strong></div>
+        <div class="small">Save by deck name. Click Load saved deck to choose a saved deck button, then it loads and analyzes automatically.</div>
+        <div id="savedDeckButtonsInline" class="saved-decks-grid"></div>
       </div>
       <div id="status" class="note">Ready.</div>
     </section>
@@ -188,6 +206,25 @@ footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
         <div class="stat-box">
           <h4>Commander support check</h4>
           <div id="commandFit" class="summary muted">Waiting for deck analysis.</div>
+        </div>
+      </div>
+
+      <div class="stat-box" style="margin-top:14px">
+        <h4>Manual role count adjustments</h4>
+        <div class="small">If the classifier is off, change the counts below and rerun the bracket analysis using your adjusted role numbers. This does not change the saved decklist or the goldfish sample.</div>
+        <div class="row4" id="roleAdjustments" style="margin-top:10px">
+          <div><label>Ramp / rocks / dorks</label><input id="adjRamp" type="number" min="0" value="0"></div>
+          <div><label>Card advantage / draw</label><input id="adjDraw" type="number" min="0" value="0"></div>
+          <div><label>Spot interaction</label><input id="adjRemoval" type="number" min="0" value="0"></div>
+          <div><label>Board wipes</label><input id="adjWipe" type="number" min="0" value="0"></div>
+          <div><label>Protection</label><input id="adjProtection" type="number" min="0" value="0"></div>
+          <div><label>Recursion</label><input id="adjRecursion" type="number" min="0" value="0"></div>
+          <div><label>Finishers</label><input id="adjFinisher" type="number" min="0" value="0"></div>
+          <div><label>Synergy</label><input id="adjSynergy" type="number" min="0" value="0"></div>
+        </div>
+        <div class="toolbar">
+          <button class="secondary" id="reanalyzeRolesBtn">Reanalyze with adjusted role counts</button>
+          <button class="ghost" id="resetRolesBtn">Reset to detected role counts</button>
         </div>
       </div>
 
@@ -228,14 +265,37 @@ footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
   <section class="panel" style="margin-top:18px">
     <h2>Detected card buckets</h2>
     <div class="row">
+      <div><h3>Lands</h3><div id="listLands"></div></div>
       <div><h3>Ramp / rocks / dorks</h3><div id="listRamp"></div></div>
-      <div><h3>Draw / advantage</h3><div id="listDraw"></div></div>
     </div>
     <div class="row">
-      <div><h3>Removal / wipes</h3><div id="listRemoval"></div></div>
-      <div><h3>Protection / recursion / finishers</h3><div id="listMisc"></div></div>
+      <div><h3>Card advantage / draw</h3><div id="listDraw"></div></div>
+      <div><h3>Spot interaction</h3><div id="listRemoval"></div></div>
+    </div>
+    <div class="row">
+      <div><h3>Board wipes</h3><div id="listWipes"></div></div>
+      <div><h3>Protection</h3><div id="listProtection"></div></div>
+    </div>
+    <div class="row">
+      <div><h3>Recursion</h3><div id="listRecursion"></div></div>
+      <div><h3>Finishers</h3><div id="listFinishers"></div></div>
+    </div>
+    <div class="row">
+      <div><h3>Synergy pieces</h3><div id="listSynergy"></div></div>
+      <div><h3>Tutors / selection</h3><div id="listTutors"></div></div>
     </div>
   </section>
+
+  <div id="savedDeckModal" class="modal-backdrop">
+    <div class="modal-card">
+      <div class="modal-head">
+        <h2 style="margin:0">Load a saved deck</h2>
+        <button class="ghost" id="closeSavedDecksBtn">Close</button>
+      </div>
+      <div class="small">Click any saved deck button to load it and analyze it automatically.</div>
+      <div id="savedDeckButtonsModal" class="saved-decks-grid" style="margin-top:12px"></div>
+    </div>
+  </div>
 
   <footer>
     Uses public Scryfall card data. The goldfish and win timing are intentionally heuristic rather than rules-perfect MTG.
@@ -258,8 +318,9 @@ const categoryDescriptions = {
 };
 
 let current = {
-  parsed: [], cardMap: new Map(), commanders: [], analysis: null, batch: null
+  parsed: [], cardMap: new Map(), commanders: [], analysis: null, batch: null, adjustedCounts: null, trueRating: null
 };
+const SAVED_DECKS_KEY = 'commander_goldfish_saved_decks_v2';
 const FULL_SIM_TURNS = 20;
 const SHORT_TURN_VIEW = 10;
 
@@ -379,6 +440,7 @@ function normalizeCard(c){
 function classifyCard(card){
   const text = (card.oracle_text || '').toLowerCase();
   const type = (card.type_line || '').toLowerCase();
+  const name = (card.name || '').toLowerCase();
   const isLand = type.includes('land');
   const isCreature = type.includes('creature');
   const isArtifact = type.includes('artifact');
@@ -387,25 +449,40 @@ function classifyCard(card){
     finisher:false, synergy:false, rock1:false, tutor:false, counter:false
   };
 
-  const manaAbility = /add\s+\{[wubrgc]\}|\badd one mana\b|\badd two mana\b|\badd [a-z]+ mana\b/i.test(text);
-  const searchesLand = /search your library for a basic land|search your library for up to .* land|put a land card from your library onto the battlefield/i.test(text);
-  const costReductionRamp = /costs? \{?1\}? less|treasure token|create .* treasure/i.test(text);
-  if(!isLand && (manaAbility || searchesLand || costReductionRamp)) tags.ramp = true;
+  const anyMana = /add one mana of any color|mana of any color/.test(text);
+  const manaAbility = /add\s+\{[wubrgc]\}|\badd one mana\b|\badd two mana\b|\badd [a-z]+ mana\b/i.test(text) || anyMana;
+  const searchesLand = /search your library for (?:a|an|up to .*?) land|put (?:a|an) land card from your library onto the battlefield|you may put a land card from your hand onto the battlefield/i.test(text);
+  const treasures = /create .* treasure|treasure token/i.test(text);
+  const costReductionRamp = /costs? \{?\d+\}? less|spells? you cast cost .* less|creature spells? you cast cost .* less/i.test(text);
+  const landUntapRamp = /untap target land|untap up to .* lands/i.test(text);
+
+  if(!isLand && (manaAbility || searchesLand || treasures || costReductionRamp || landUntapRamp)) tags.ramp = true;
   if((isArtifact || isCreature) && card.cmc <= 1 && manaAbility) tags.rock1 = true;
 
-  if(/\bdraw [a-z0-9x]+ card|\bdraw a card|\bdraw two cards|\bwhenever .* draw\b|\bconnive\b|\binvestigate\b|\bimpulse\b|\blook at the top .* put .* into your hand/i.test(text) ||
-     /\bcycling\b|\bcantrip\b/i.test(text)) tags.draw = true;
+  const drawPattern = /\bdraw [a-z0-9x]+ cards?\b|\bdraw a card\b|\bdraw two cards\b|\bwhenever .* draw\b|\bconnive\b|\binvestigate\b|\bsurveil\b|\bimpulse\b|\blook at the top .* put .* into your hand\b|\bexile the top .* you may play\b|\bwhenever .* put .* into your hand\b/i;
+  if(drawPattern.test(text) || /\bcycling\b|\bcantrip\b/.test(text)) tags.draw = true;
 
-  if(/\bdestroy target\b|\bexile target\b|\breturn target .* to .* hand\b|\bcounter target\b|\bfight target\b|\beach opponent sacrifices\b|\btarget creature gets -[0-9x]/i.test(text)) tags.removal = true;
-  if(/\bdestroy all\b|\bexile all\b|\beach creature\b.*dies|\bwrath\b|\bboard wipe\b|\beach player sacrifices all/i.test(text)) { tags.wipe = true; tags.removal = true; }
-  if(/\bcounter target\b/.test(text)) { tags.counter = true; tags.removal = true; }
+  const wipePattern = /\bdestroy all\b|\bexile all\b|\breturn all\b.*to (?:their owners'|owners') hands\b|\beach creature\b.*gets -\d+\/-\d+\b|\beach creature gets -x\/-x\b|\bdeals \d+ damage to each creature\b|\bwrath\b|\beach player sacrifices all\b|\beach opponent sacrifices all creatures\b/i;
+  const counterPattern = /\bcounter target\b|\bcounter up to\b|\bchoose new targets\b|\bchange the target\b|\bcopy target instant or sorcery spell\b.*you may choose new targets\b/i;
+  const spotInteractionPattern = /\bdestroy target\b|\bexile target\b|\breturn target\b.*to (?:its owner's|their owner's|its owners'|their owners') hand\b|\bput target\b.*into (?:its owner's|their owner's|its owners'|their owners') library\b|\bshuffle target\b.*into (?:its owner's|their owner's|its owners'|their owners') library\b|\bfight target\b|\btarget creature gets -[0-9x]/i;
+  const blinkPattern = /\bexile target\b.*return (?:it|that card) to the battlefield\b|\bblink\b|\bflicker\b|\bphase out\b/i;
 
-  if(/\bhexproof\b|\bindestructible\b|\bprotection from\b|\bphase out\b|\bward\b|\bcan'?t be the target\b|\bprevent all damage\b|\byour permanents gain\b/i.test(text)) tags.protection = true;
-  if(/\breturn target .* from your graveyard\b|\breanimate\b|\bflashback\b|\bescape\b|\bregrowth\b|\brecur/i.test(text)) tags.recursion = true;
-  if(card.cmc >= 7 || /\byou win the game\b|\binfinite\b|\bextra turn\b|\bdouble the damage\b|\bfor each opponent\b.*lose\b|\bwhenever you cast .* copy\b/i.test(text)) tags.finisher = true;
-  if(/\btutor\b|search your library for a card|search your library for an artifact|search your library for an enchantment|search your library for a creature card/i.test(text)) tags.tutor = true;
-  if(card.cmc >= 2 && !isLand && !tags.ramp && !tags.draw && !tags.removal && !tags.finisher) tags.synergy = true;
-  if(/\bwhenever\b|\bfor each\b|\btoken\b|\bmodified\b|\bventure\b|\bdungeon\b|\blandfall\b|\bartifact\b|\benchantment\b|\bgraveyard\b|\bblink\b|\bsacrifice\b/.test(text)) tags.synergy = true;
+  if(wipePattern.test(text)) { tags.wipe = true; tags.removal = true; }
+  if(spotInteractionPattern.test(text)) tags.removal = true;
+  if(counterPattern.test(text)) { tags.counter = true; tags.removal = true; }
+  if(blinkPattern.test(text)) { tags.protection = true; tags.removal = true; }
+
+  if(/\bhexproof\b|\bindestructible\b|\bprotection from\b|\bphase out\b|\bward\b|\bcan'?t be the target\b|\bprevent all damage\b|\bspells you control can'?t be countered\b|\byour permanents gain\b/i.test(text)) tags.protection = true;
+  if(/\breturn target .* from your graveyard\b|\breturn .* graveyard to .* hand\b|\breanimate\b|\bflashback\b|\bescape\b|\bregrowth\b|\breturn .* from your graveyard to the battlefield\b|\bmill .* then return\b/i.test(text)) tags.recursion = true;
+
+  if(/\btutor\b|search your library for a card|search your library for an artifact|search your library for an enchantment|search your library for a creature card|search your library for an instant or sorcery card/i.test(text)) tags.tutor = true;
+
+  if(!tags.wipe && (card.cmc >= 7 || /\byou win the game\b|\binfinite\b|\bextra turn\b|\bdouble the damage\b|\bfor each opponent\b.*lose\b|\bwhenever you cast .* copy\b|\bdamage to each opponent\b/i.test(text))) tags.finisher = true;
+
+  const synergyPattern = /\bwhenever\b|\bfor each\b|\btoken\b|\bmodified\b|\bventure\b|\bdungeon\b|\blandfall\b|\bartifact\b|\benchantment\b|\bgraveyard\b|\bblink\b|\bflicker\b|\bsacrifice\b|\bdragon\b|\belf\b|\bgoblin\b|\bzombie\b|\bangel\b|\bvampire\b|\btreasure\b|\bclue\b|\bfood\b|\benergy\b/i;
+  if(!isLand && (synergyPattern.test(text) || (isCreature && card.cmc >= 2) || tags.ramp || tags.draw || tags.protection || tags.recursion || tags.tutor)) {
+    tags.synergy = true;
+  }
 
   return tags;
 }
@@ -453,8 +530,9 @@ function splitCommandZone(cards){
   return {command, library};
 }
 
-function karstenLandSuggestion(cards){
-  const counts = countTags(cards);
+function karstenLandSuggestion(cards, roleCountsOverride=null){
+  const detected = countTags(cards);
+  const counts = roleCountsOverride ? {...detected, ...roleCountsOverride} : detected;
   const nonlands = cards.filter(c=>!c.tags.land);
   const amv = nonlands.reduce((a,c)=>a+c.cmc,0) / Math.max(1, nonlands.length);
   const raw = 31.42 + 3.13 * amv - 0.28 * counts.ramp;
@@ -520,15 +598,16 @@ function estimateCommanderTurn(cards, commanders){
   return Math.max(2, Math.min(9, turn));
 }
 
-function scoreDeck(cards, commanders){
-  const counts = countTags(cards);
-  const nonlands = cards.length - counts.lands;
+function scoreDeck(cards, commanders, roleCountsOverride=null){
+  const rawCounts = countTags(cards);
+  const counts = roleCountsOverride ? {...rawCounts, ...roleCountsOverride} : rawCounts;
+  const nonlands = cards.length - rawCounts.lands;
   const avgCmc = cards.filter(c=>!c.tags.land).reduce((a,c)=>a+c.cmc,0) / Math.max(1, nonlands);
   const cheapRamp = cards.filter(c => c.tags.ramp && c.cmc <= 2).length;
-  const efficientRemoval = cards.filter(c => c.tags.removal && c.cmc <= 3).length;
+  const efficientInteraction = cards.filter(c => c.tags.removal && c.cmc <= 3).length;
   const commanderFit = evaluateCommanderFit(cards, commanders);
   const estimatedTurnCommander = estimateCommanderTurn(cards, commanders);
-  const karsten = karstenLandSuggestion(cards);
+  const karsten = karstenLandSuggestion(cards, roleCountsOverride);
 
   let manaSpeed = 0;
   if(cheapRamp >= 16 || counts.rock1 >= 4) manaSpeed = 5;
@@ -547,7 +626,7 @@ function scoreDeck(cards, commanders){
   let interaction = 0;
   const interTotal = counts.removal + counts.counter;
   if(interTotal >= 18) interaction = 5;
-  else if(interTotal >= 14 && efficientRemoval >= 8) interaction = 4;
+  else if(interTotal >= 14 && efficientInteraction >= 8) interaction = 4;
   else if(interTotal >= 10) interaction = 3;
   else if(interTotal >= 6) interaction = 2;
   else if(interTotal >= 3) interaction = 1;
@@ -585,7 +664,7 @@ function scoreDeck(cards, commanders){
   const scores = [manaSpeed, cardAdv, interaction, cmdDep, winSpeed, winQuality, resilience];
   const total = scores.reduce((a,b)=>a+b,0);
   const bracket = convertTotalToBracket(total, counts, estimatedTurnCommander, commanderFit);
-  return { counts, avgCmc, nonlands, scores, total, bracket, commanderFit, estimatedTurnCommander, karsten };
+  return { rawCounts, counts, avgCmc, nonlands, scores, total, bracket, commanderFit, estimatedTurnCommander, karsten };
 }
 
 function convertTotalToBracket(total, counts, commanderTurn, commanderFit){
@@ -627,39 +706,165 @@ function renderScores(analysis){
 function recomputeFromSliders(){
   const vals = [...$('sliders').querySelectorAll('input[type=range]')].map(x => parseInt(x.value,10));
   const total = vals.reduce((a,b)=>a+b,0);
-  const bracket = convertTotalToBracket(total, current.analysis.counts, current.analysis.estimatedTurnCommander, current.analysis.commanderFit);
-  $('bracketScore').textContent = bracket.value;
-  $('bracketLabel').textContent = bracket.label;
-  $('totalScoreText').textContent = `Total category score: ${total} / 35`;
+  current.trueRating = computeTrueBracketRating(current.analysis, current.batch, total);
+  $('bracketScore').textContent = current.trueRating.value;
+  $('bracketLabel').textContent = current.trueRating.label;
+  $('totalScoreText').textContent = `Category total: ${total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}%`;
+}
+function populateRoleAdjustmentInputs(counts){
+  $('adjRamp').value = counts.ramp || 0;
+  $('adjDraw').value = counts.draw || 0;
+  $('adjRemoval').value = Math.max(0, (counts.removal || 0) - (counts.wipe || 0));
+  $('adjWipe').value = counts.wipe || 0;
+  $('adjProtection').value = counts.protection || 0;
+  $('adjRecursion').value = counts.recursion || 0;
+  $('adjFinisher').value = counts.finisher || 0;
+  $('adjSynergy').value = counts.synergy || 0;
+}
+function getAdjustedRoleCountsFromInputs(){
+  const spot = +$('adjRemoval').value || 0;
+  const wipe = +$('adjWipe').value || 0;
+  return {
+    ramp: +$('adjRamp').value || 0,
+    draw: +$('adjDraw').value || 0,
+    removal: spot + wipe,
+    wipe,
+    protection: +$('adjProtection').value || 0,
+    recursion: +$('adjRecursion').value || 0,
+    finisher: +$('adjFinisher').value || 0,
+    synergy: +$('adjSynergy').value || 0
+  };
+}
+function renderRoleCounts(counts){
+  $('roleCounts').innerHTML = [
+    ['Lands',counts.lands],['Ramp / rocks / dorks',counts.ramp],['Card advantage / draw',counts.draw],
+    ['Spot interaction',Math.max(0,(counts.removal||0)-(counts.wipe||0))],['Board wipes',counts.wipe],
+    ['Protection',counts.protection],['Recursion',counts.recursion],['Finishers',counts.finisher],
+    ['Synergy pieces',counts.synergy],['Tutors / selection',counts.tutor||0],['1-drop rocks',counts.rock1||0],['Counter / deflect',counts.counter||0]
+  ].map(([k,v]) => `<div class="item"><span class="name">${escapeHtml(k)}</span><span>${v}</span></div>`).join('');
+}
+function updateAnalysisDisplay(){
+  $('resultBand').style.display = '';
+  current.trueRating = computeTrueBracketRating(current.analysis, current.batch);
+  $('bracketScore').textContent = current.trueRating.value;
+  $('bracketLabel').textContent = current.trueRating.label;
+  $('totalScoreText').textContent = `Category total: ${current.analysis.total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}%`;
+  $('kpiCards').textContent = current.parsed.length;
+  $('kpiLands').textContent = current.analysis.rawCounts.lands;
+  $('kpiNonlands').textContent = current.parsed.length - current.analysis.rawCounts.lands;
+  $('kpiKarsten').textContent = current.analysis.karsten.suggested.toFixed(1);
+  $('commandFit').textContent = current.analysis.commanderFit.text;
+  $('summary').innerHTML = escapeHtml(summarizeAnalysis(current.analysis)).replace(/\\n\\n/g, '<br><br>');
+  renderRoleCounts(current.analysis.counts);
+  renderScores(current.analysis);
+  benchmarkRows(current.parsed, current.analysis.counts);
+}
+function applyAdjustedRoleAnalysis(){
+  if(!current.parsed || !current.parsed.length){ alert('Analyze a deck first.'); return; }
+  current.adjustedCounts = getAdjustedRoleCountsFromInputs();
+  current.analysis = scoreDeck(current.parsed, current.commanders, current.adjustedCounts);
+  updateAnalysisDisplay();
+  setStatus('Reanalyzed using adjusted role counts.', true);
+}
+function resetAdjustedRoleAnalysis(){
+  if(!current.parsed || !current.parsed.length){ return; }
+  current.adjustedCounts = null;
+  current.analysis = scoreDeck(current.parsed, current.commanders, null);
+  populateRoleAdjustmentInputs(current.analysis.rawCounts || countTags(current.parsed));
+  updateAnalysisDisplay();
+  setStatus('Reset to detected role counts.', true);
 }
 
-function benchmarkRows(cards){
-  const counts = countTags(cards);
-  const rows = [
-    {label:'Turn 1: 1-drop rock', have:counts.rock1, need:+$('bmRock1').value, hit:'77%'},
-    {label:'Turn 2: ramp', have:counts.ramp, need:+$('bmRamp2').value, hit:'76.2%'},
-    {label:'Turn 3: draw', have:counts.draw, need:+$('bmDraw3').value, hit:'74.3%'},
-    {label:'Turn 4: 4+ lands benchmark', have:counts.lands, need:+$('bmLands4').value, hit:'75%'},
-    {label:'Turn 6: removal', have:counts.removal, need:+$('bmRemoval6').value, hit:'77.3%'},
-    {label:'Turn 7: synergy', have:counts.synergy, need:+$('bmSynergy7').value, hit:'86.5%'},
-    {label:'Turn 8: finisher', have:counts.finisher, need:+$('bmFinisher8').value, hit:'84.3%'}
-  ];
-  $('benchmarks').innerHTML = `<table class="table"><thead><tr><th>Benchmark</th><th>Deck count</th><th>Target</th><th>Read</th></tr></thead><tbody>${
+function benchmarkCoverageRows(counts){
+  return [
+    {key:'rock1', label:'Turn 1: 1-drop rock', have:counts.rock1, need:+$('bmRock1').value, hit:'77%'},
+    {key:'ramp', label:'Turn 2: ramp', have:counts.ramp, need:+$('bmRamp2').value, hit:'76.2%'},
+    {key:'draw', label:'Turn 3: draw', have:counts.draw, need:+$('bmDraw3').value, hit:'74.3%'},
+    {key:'lands', label:'Turn 4: 4+ lands benchmark', have:counts.lands, need:+$('bmLands4').value, hit:'75%'},
+    {key:'removal', label:'Turn 6: interaction', have:counts.removal, need:+$('bmRemoval6').value, hit:'77.3%'},
+    {key:'synergy', label:'Turn 7: synergy', have:counts.synergy, need:+$('bmSynergy7').value, hit:'86.5%'},
+    {key:'finisher', label:'Turn 8: finisher', have:counts.finisher, need:+$('bmFinisher8').value, hit:'84.3%'}
+  ].map(r => {
+    const pct = r.need > 0 ? (r.have / r.need) : 0;
+    let grade = 'bad';
+    let read = 'Bad';
+    if(pct >= 0.85){ grade = 'good'; read = 'Excellent'; }
+    else if(pct >= 0.65){ grade = 'warn'; read = 'Close'; }
+    else if(pct >= 0.50){ grade = 'good'; read = 'Good enough'; }
+    else if(pct >= 0.35){ grade = 'warn'; read = 'Not enough'; }
+    return {...r, pct, grade, read};
+  });
+}
+function benchmarkCoverageScore(counts){
+  const rows = benchmarkCoverageRows(counts);
+  return rows.reduce((a,r)=>a + Math.min(1, r.pct), 0) / Math.max(1, rows.length);
+}
+function goldfishQualityScore(batch){
+  if(!batch) return null;
+  const hitRates = [
+    batch.benchmarkHits.rock1,batch.benchmarkHits.ramp,batch.benchmarkHits.draw,batch.benchmarkHits.lands,
+    batch.benchmarkHits.removal,batch.benchmarkHits.synergy,batch.benchmarkHits.finisher
+  ].map(v => v / Math.max(1, batch.runs));
+  const hitAvg = hitRates.reduce((a,b)=>a+b,0) / hitRates.length;
+  const commanderSpeed = batch.avgCommander == null ? 0.25 : Math.max(0, Math.min(1, (8 - batch.avgCommander) / 6));
+  const winSpeed = batch.avgWin == null ? 0.15 : Math.max(0, Math.min(1, (16 - batch.avgWin) / 12));
+  const mulliganEase = Math.max(0, Math.min(1, 1 - (batch.avgMulligans / 3)));
+  return 0.45 * hitAvg + 0.2 * commanderSpeed + 0.25 * winSpeed + 0.1 * mulliganEase;
+}
+function computeTrueBracketRating(analysis, batch=null, totalOverride=null){
+  const total = totalOverride == null ? analysis.total : totalOverride;
+  const categoryNorm = Math.max(0, Math.min(1, total / 35));
+  const benchmarkNorm = benchmarkCoverageScore(analysis.counts);
+  const goldfishNorm = batch ? goldfishQualityScore(batch) : (0.55 * categoryNorm + 0.45 * benchmarkNorm);
+  const blendedNorm = 0.55 * categoryNorm + 0.20 * benchmarkNorm + 0.25 * goldfishNorm;
+  const syntheticTotal = blendedNorm * 35;
+  let base = 1;
+  if(syntheticTotal >= 32) base = 5;
+  else if(syntheticTotal >= 24) base = 4;
+  else if(syntheticTotal >= 15) base = 3;
+  else if(syntheticTotal >= 9) base = 2;
+  const labels = {1:'Jank / Theme First',2:'Casual / Functional',3:'High-Power Casual',4:'Very High Power / cEDH-Adjacent',5:'cEDH / Competitive'};
+  if(base === 5){
+    return { value:'5.0', label:labels[5], categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal };
+  }
+  const ranges = {1:[0,8],2:[9,14],3:[15,23],4:[24,31]};
+  const [minT,maxT] = ranges[base];
+  let dec = ((syntheticTotal - minT) / Math.max(1, (maxT - minT))) * 0.9;
+  if(benchmarkNorm >= 0.85) dec += 0.08;
+  else if(benchmarkNorm < 0.55) dec -= 0.08;
+  if(goldfishNorm >= 0.8) dec += 0.08;
+  else if(goldfishNorm < 0.45) dec -= 0.08;
+  dec = Math.max(0, Math.min(0.9, dec));
+  const decimalDigit = Math.round(dec * 10);
+  return {
+    value: `${base}.${decimalDigit}`,
+    label: labels[base],
+    categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal
+  };
+}
+function benchmarkRows(cards, roleCountsOverride=null){
+  const detected = countTags(cards);
+  const counts = roleCountsOverride ? {...detected, ...roleCountsOverride} : detected;
+  const rows = benchmarkCoverageRows(counts);
+  $('benchmarks').innerHTML = `<table class="table"><thead><tr><th>Benchmark</th><th>Deck / Target</th><th>Coverage</th><th>Read</th></tr></thead><tbody>${
     rows.map(r=>{
-      const cls = r.have >= r.need ? 'good' : (r.have >= Math.floor(r.need*0.7) ? 'warn' : 'bad');
-      const txt = r.have >= r.need ? 'At or above benchmark' : 'Below benchmark';
-      return `<tr><td>${escapeHtml(r.label)}</td><td>${r.have}</td><td>${r.need} (${r.hit})</td><td class="${cls}">${txt}</td></tr>`;
+      const pctText = (r.pct * 100).toFixed(1) + '%';
+      return `<tr><td>${escapeHtml(r.label)}</td><td>${r.have} / ${r.need} <span class="small">(${r.hit})</span></td><td>${pctText}</td><td class="${r.grade}">${r.read}</td></tr>`;
     }).join('')
   }</tbody></table>`;
 }
 function summarizeAnalysis(a){
   const c = a.counts;
   const lines = [];
-  lines.push(`The auto-score sees ${c.lands} lands, ${c.ramp} ramp pieces, ${c.draw} draw/advantage cards, ${c.removal} interaction pieces, ${c.protection} protection cards, ${c.recursion} recursion cards, ${c.synergy} synergy cards, and ${c.finisher} finishers.`);
+  lines.push(`The classifier sees ${c.lands} lands, ${c.ramp} ramp pieces, ${c.draw} draw/advantage cards, ${Math.max(0,(c.removal||0)-(c.wipe||0))} spot interaction cards, ${c.wipe} board wipes, ${c.protection} protection cards, ${c.recursion} recursion cards, ${c.synergy} synergy cards, and ${c.finisher} finishers.`);
   lines.push(`Estimated commander landing turn: about turn ${a.estimatedTurnCommander}. Average nonland mana value: ${a.avgCmc.toFixed(2)}.`);
   lines.push(`Karsten mana-base suggestion: ${a.karsten.suggested.toFixed(1)} lands from 31.42 + 3.13 × AMV − 0.28 × Ramp. Your current deck shows ${c.lands} lands.`);
   lines.push(a.commanderFit.text);
-  lines.push(`This produces an initial ${a.bracket.value} rating in ${a.bracket.label}. You can still adjust the seven category sliders if the deck plays faster, slower, or more commander-reliant than the heuristics detect.`);
+  if(current.trueRating){
+    lines.push(`True bracket rating blends three signals: category score ${Math.round(current.trueRating.categoryNorm*100)}%, benchmark coverage ${Math.round(current.trueRating.benchmarkNorm*100)}%, and goldfish performance ${Math.round(current.trueRating.goldfishNorm*100)}%. Final blended rating: ${current.trueRating.value} in ${current.trueRating.label}.`);
+  } else {
+    lines.push(`This produces a provisional ${a.bracket.value} rating in ${a.bracket.label}. Run the 100-game goldfish to upgrade that into the true blended bracket decimal rating.`);
+  }
   return lines.join('\n\n');
 }
 
@@ -945,7 +1150,8 @@ function renderBatchCharts(batch){
     `Average commander cast turn: ${batch.avgCommander ? batch.avgCommander.toFixed(2) : 'not cast in sampled runs'}.`,
     `Probable win / overwhelm turn: ${batch.avgWin ? batch.avgWin.toFixed(2) : 'not reached by turn ' + FULL_SIM_TURNS}.`,
     `Utility charts show when ramp, draw, removal, and protection first appear, plus average copies in hand and on battlefield by turn.`,
-    `Benchmark hit rates are percentages of sampled games that met the turn target.`
+    `Benchmark hit rates are percentages of sampled games that met the turn target.`,
+    `The final bracket decimal rating blends category score, benchmark coverage, and goldfish performance.`
   ].join('\n\n');
 }
 
@@ -970,35 +1176,26 @@ async function analyze(){
 
     current.parsed = cards;
     current.commanders = commanders;
-    current.analysis = scoreDeck(cards, commanders);
+    current.adjustedCounts = null;
+    current.analysis = scoreDeck(cards, commanders, null);
+    populateRoleAdjustmentInputs(current.analysis.rawCounts);
 
-    $('resultBand').style.display = '';
-    $('bracketScore').textContent = current.analysis.bracket.value;
-    $('bracketLabel').textContent = current.analysis.bracket.label;
-    $('totalScoreText').textContent = `Total category score: ${current.analysis.total} / 35`;
-    $('kpiCards').textContent = cards.length;
-    $('kpiLands').textContent = current.analysis.counts.lands;
-    $('kpiNonlands').textContent = cards.length - current.analysis.counts.lands;
-    $('kpiKarsten').textContent = current.analysis.karsten.suggested.toFixed(1);
-    $('commandFit').textContent = current.analysis.commanderFit.text;
-    $('summary').textContent = summarizeAnalysis(current.analysis);
-
-    const rc = current.analysis.counts;
-    $('roleCounts').innerHTML = [
-      ['Ramp',rc.ramp],['Draw',rc.draw],['Removal',rc.removal],['Wipes',rc.wipe],['Protection',rc.protection],
-      ['Recursion',rc.recursion],['Finishers',rc.finisher],['Synergy',rc.synergy],['Tutors',rc.tutor],['1-drop rocks',rc.rock1]
-    ].map(([k,v]) => `<div class="item"><span class="name">${escapeHtml(k)}</span><span>${v}</span></div>`).join('');
-
-    renderScores(current.analysis); benchmarkRows(cards);
+    renderSimpleList('listLands', uniqueNames(cards, c=>c.tags && c.tags.land));
     renderSimpleList('listRamp', uniqueNames(cards, c=>c.tags && c.tags.ramp));
     renderSimpleList('listDraw', uniqueNames(cards, c=>c.tags && c.tags.draw));
-    renderSimpleList('listRemoval', uniqueNames(cards, c=>c.tags && (c.tags.removal || c.tags.wipe)));
-    renderSimpleList('listMisc', uniqueNames(cards, c=>c.tags && (c.tags.protection || c.tags.recursion || c.tags.finisher)));
+    renderSimpleList('listRemoval', uniqueNames(cards, c=>c.tags && c.tags.removal && !c.tags.wipe));
+    renderSimpleList('listWipes', uniqueNames(cards, c=>c.tags && c.tags.wipe));
+    renderSimpleList('listProtection', uniqueNames(cards, c=>c.tags && c.tags.protection));
+    renderSimpleList('listRecursion', uniqueNames(cards, c=>c.tags && c.tags.recursion));
+    renderSimpleList('listFinishers', uniqueNames(cards, c=>c.tags && c.tags.finisher));
+    renderSimpleList('listSynergy', uniqueNames(cards, c=>c.tags && c.tags.synergy && !c.tags.land));
+    renderSimpleList('listTutors', uniqueNames(cards, c=>c.tags && c.tags.tutor));
 
     const runs = Math.max(10, +$('goldfishRuns').value || 100);
     setStatus(`Running ${runs} goldfish simulations and building charts...`);
     await sleep(20);
     current.batch = runBatchGoldfish(runs);
+    updateAnalysisDisplay();
     renderBatchCharts(current.batch);
     $('goldfishBtn').style.display = '';
     setStatus('Analysis complete.', true);
@@ -1028,6 +1225,16 @@ function openGoldfishWindow(){
 body{font-family:Arial,sans-serif;background:#07111d;color:#e5eefc;margin:0;padding:20px}
 h1,h2{margin:0 0 12px} .muted{color:#9db0c7} .card{background:#0e1a2a;border:1px solid #1d3550;border-radius:12px;padding:14px;margin:12px 0}
 ul{margin:8px 0 0 20px} pre{white-space:pre-wrap;font-family:inherit} .pill{display:inline-block;background:#14304a;border:1px solid #2a4a68;padding:4px 8px;border-radius:999px;margin:0 6px 6px 0}
+
+.saved-decks-panel{margin-top:14px;padding:12px;border:1px solid var(--line);border-radius:16px;background:rgba(255,255,255,.03)}
+.saved-decks-grid{display:flex;flex-wrap:wrap;gap:10px;margin-top:10px}
+.saved-deck-btn{appearance:none;border:1px solid var(--line);border-radius:999px;padding:10px 14px;background:rgba(255,255,255,.05);color:var(--text);cursor:pointer;font-weight:700}
+.saved-deck-btn:hover{background:rgba(125,211,252,.12)}
+.modal-backdrop{position:fixed;inset:0;background:rgba(0,0,0,.58);display:none;align-items:center;justify-content:center;padding:20px;z-index:50}
+.modal-backdrop.show{display:flex}
+.modal-card{width:min(920px,100%);max-height:80vh;overflow:auto;background:var(--card);border:1px solid var(--line);border-radius:18px;box-shadow:var(--shadow);padding:18px}
+.modal-head{display:flex;justify-content:space-between;gap:12px;align-items:center;margin-bottom:12px}
+
 </style></head><body>
 <h1>Single goldfish</h1>
 <div class="card">
@@ -1045,7 +1252,122 @@ ${sim.turns.map(t=>`<div class="card"><h2>Turn ${t.turn}</h2><ul>${t.events.map(
   }
 }
 
+
+function collectFormState(){
+  return {
+    deckName: $('deckName').value.trim(),
+    commander1: $('commander1').value,
+    commander2: $('commander2').value,
+    decklist: $('decklist').value,
+    goldfishRuns: $('goldfishRuns').value,
+    toggleLands: $('toggleLands').checked,
+    minLands: $('minLands').value,
+    maxLands: $('maxLands').value,
+    toggleRamp: $('toggleRamp').checked,
+    minRampOpen: $('minRampOpen').value,
+    toggleDraw: $('toggleDraw').checked,
+    minDrawOpen: $('minDrawOpen').value,
+    toggleProtect: $('toggleProtect').checked,
+    minProtectOpen: $('minProtectOpen').value,
+    toggleRemoval: $('toggleRemoval').checked,
+    minRemovalOpen: $('minRemovalOpen').value,
+    bmRock1: $('bmRock1').value,
+    bmRamp2: $('bmRamp2').value,
+    bmDraw3: $('bmDraw3').value,
+    bmLands4: $('bmLands4').value,
+    bmRemoval6: $('bmRemoval6').value,
+    bmSynergy7: $('bmSynergy7').value,
+    bmFinisher8: $('bmFinisher8').value,
+    karstenOverride: $('karstenOverride').value
+  };
+}
+function applyFormState(state){
+  if(!state) return;
+  $('deckName').value = state.deckName || '';
+  $('commander1').value = state.commander1 || '';
+  $('commander2').value = state.commander2 || '';
+  $('decklist').value = state.decklist || '';
+  $('goldfishRuns').value = state.goldfishRuns || '100';
+  $('toggleLands').checked = !!state.toggleLands;
+  $('minLands').value = state.minLands ?? '2';
+  $('maxLands').value = state.maxLands ?? '5';
+  $('toggleRamp').checked = !!state.toggleRamp;
+  $('minRampOpen').value = state.minRampOpen ?? '1';
+  $('toggleDraw').checked = !!state.toggleDraw;
+  $('minDrawOpen').value = state.minDrawOpen ?? '1';
+  $('toggleProtect').checked = !!state.toggleProtect;
+  $('minProtectOpen').value = state.minProtectOpen ?? '1';
+  $('toggleRemoval').checked = !!state.toggleRemoval;
+  $('minRemovalOpen').value = state.minRemovalOpen ?? '1';
+  $('bmRock1').value = state.bmRock1 ?? '16';
+  $('bmRamp2').value = state.bmRamp2 ?? '14';
+  $('bmDraw3').value = state.bmDraw3 ?? '12';
+  $('bmLands4').value = state.bmLands4 ?? '41';
+  $('bmRemoval6').value = state.bmRemoval6 ?? '10';
+  $('bmSynergy7').value = state.bmSynergy7 ?? '30';
+  $('bmFinisher8').value = state.bmFinisher8 ?? '5';
+  $('karstenOverride').value = state.karstenOverride || '';
+}
+function getSavedDecks(){
+  try{ return JSON.parse(localStorage.getItem(SAVED_DECKS_KEY) || '{}'); }catch(e){ return {}; }
+}
+function setSavedDecks(data){ localStorage.setItem(SAVED_DECKS_KEY, JSON.stringify(data)); }
+function refreshSavedDeckButtons(){
+  const saved = getSavedDecks();
+  const names = Object.keys(saved).sort((a,b)=>a.localeCompare(b));
+  const render = (id)=>{
+    const el = $(id);
+    if(!el) return;
+    if(!names.length){ el.innerHTML = '<div class="muted">No saved decks yet.</div>'; return; }
+    el.innerHTML = names.map(name => `<button type="button" class="saved-deck-btn" data-deck-name="${escapeHtml(name)}">${escapeHtml(name)}</button>`).join('');
+    el.querySelectorAll('[data-deck-name]').forEach(btn => btn.addEventListener('click', async ()=>{
+      const deckName = btn.getAttribute('data-deck-name');
+      await loadSavedDeck(deckName);
+      closeSavedDeckModal();
+    }));
+  };
+  render('savedDeckButtonsInline');
+  render('savedDeckButtonsModal');
+}
+function saveCurrentDeck(){
+  const state = collectFormState();
+  const name = state.deckName.trim();
+  if(!name){ alert('Enter a deck name first so the deck can be saved.'); return; }
+  const saved = getSavedDecks();
+  saved[name] = state;
+  setSavedDecks(saved);
+  refreshSavedDeckButtons();
+  setStatus(`Saved deck: ${name}`, true);
+}
+async function loadSavedDeck(name){
+  const saved = getSavedDecks();
+  const state = saved[name];
+  if(!state){ alert('That saved deck was not found.'); refreshSavedDeckButtons(); return; }
+  applyFormState(state);
+  setStatus(`Loaded deck: ${name}. Running analysis...`, true);
+  await analyze();
+}
+function deleteCurrentDeck(){
+  const name = $('deckName').value.trim();
+  if(!name){ alert('Enter or load a deck name first.'); return; }
+  const saved = getSavedDecks();
+  if(!saved[name]){ alert('No saved deck exists with that deck name.'); return; }
+  delete saved[name];
+  setSavedDecks(saved);
+  refreshSavedDeckButtons();
+  setStatus(`Deleted saved deck: ${name}`);
+}
+function openSavedDeckModal(){ $('savedDeckModal').classList.add('show'); }
+function closeSavedDeckModal(){ $('savedDeckModal').classList.remove('show'); }
+
 $('analyzeBtn').addEventListener('click', analyze);
+$('saveDeckBtn').addEventListener('click', saveCurrentDeck);
+$('showSavedDecksBtn').addEventListener('click', openSavedDeckModal);
+$('deleteCurrentDeckBtn').addEventListener('click', deleteCurrentDeck);
+$('closeSavedDecksBtn').addEventListener('click', closeSavedDeckModal);
+$('savedDeckModal').addEventListener('click', (e)=>{ if(e.target.id==='savedDeckModal') closeSavedDeckModal(); });
+$('reanalyzeRolesBtn').addEventListener('click', applyAdjustedRoleAnalysis);
+$('resetRolesBtn').addEventListener('click', resetAdjustedRoleAnalysis);
 $('goldfishBtn').addEventListener('click', openGoldfishWindow);
 function loadSampleDeck(){
   $('deckName').value = 'Temur Creature Storm';
@@ -1153,7 +1475,7 @@ function loadSampleDeck(){
 1 Eshki, Temur's Roar`;
 }
 $('sampleBtn').addEventListener('click', loadSampleDeck);
-window.addEventListener('DOMContentLoaded', loadSampleDeck);
+window.addEventListener('DOMContentLoaded', ()=>{ loadSampleDeck(); refreshSavedDeckButtons(); });
 </script>
 </body>
 </html>
