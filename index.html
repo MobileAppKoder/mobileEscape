@@ -413,7 +413,7 @@ async function fetchScryfallCards(entries){
 }
 
 function fallbackCard(name){
-  return { name, cmc: 0, colors: [], color_identity: [], type_line: '', oracle_text: '', produced_mana: [], tags: {}, mana_cost: '', game_changer:false };
+  return { name, cmc: 0, colors: [], color_identity: [], type_line: '', oracle_text: '', produced_mana: [], tags: {}, mana_cost: '', game_changer:false, power:null, toughness:null };
 }
 
 function normalizeCard(c){
@@ -421,6 +421,8 @@ function normalizeCard(c){
   const type_line = c.type_line || faces.map(f=>f.type_line).filter(Boolean).join(' // ');
   const oracle_text = c.oracle_text || faces.map(f=>f.oracle_text).filter(Boolean).join('\n');
   const mana_cost = c.mana_cost || faces.map(f=>f.mana_cost).filter(Boolean)[0] || '';
+  const power = c.power ?? faces.map(f=>f.power).find(v => v != null) ?? null;
+  const toughness = c.toughness ?? faces.map(f=>f.toughness).find(v => v != null) ?? null;
   return {
     name: c.name,
     cmc: c.cmc || 0,
@@ -432,9 +434,11 @@ function normalizeCard(c){
     produced_mana: c.produced_mana || [],
     keywords: c.keywords || [],
     game_changer: !!c.game_changer,
+    power,
+    toughness,
     tags: classifyCard({
       name:c.name, cmc:c.cmc||0, type_line, oracle_text, mana_cost, colors:c.colors||[], color_identity:c.color_identity||[],
-      produced_mana:c.produced_mana||[], keywords:c.keywords||[], game_changer: !!c.game_changer
+      produced_mana:c.produced_mana||[], keywords:c.keywords||[], game_changer: !!c.game_changer, power, toughness
     })
   };
 }
@@ -863,79 +867,80 @@ function computeTrueBracketRating(analysis, batch=null, totalOverride=null){
   const benchmarkNorm = benchmarkCoverageScore(analysis.counts);
   const goldfishNorm = batch ? goldfishQualityScore(batch) : (0.55 * categoryNorm + 0.45 * benchmarkNorm);
   const blendedNorm = 0.55 * categoryNorm + 0.20 * benchmarkNorm + 0.25 * goldfishNorm;
-  let syntheticTotal = blendedNorm * 35;
-  const gc = analysis.counts.gameChanger || 0;
-  const gcDecimalBonus = gc >= 4 ? 0 : (gc === 3 ? 0.3 : (gc === 2 ? 0.2 : (gc === 1 ? 0.1 : 0)));
-  let base = 1;
-  if(syntheticTotal >= 32) base = 5;
-  else if(syntheticTotal >= 24) base = 4;
-  else if(syntheticTotal >= 15) base = 3;
-  else if(syntheticTotal >= 9) base = 2;
-  const labels = {1:'Jank / Theme First',2:'Casual / Functional',3:'High-Power Casual',4:'Very High Power / cEDH-Adjacent',5:'cEDH / Competitive'};
+  const syntheticTotal = blendedNorm * 35;
+  const labels = {1:'Jank / Theme First',2:'Casual / Functional',3:'High-Power Casual',4:'Very High Power / cEDH-Adjacent',5:'cEDH / Competitive+'};
 
+  const gc = analysis.counts.gameChanger || 0;
   let wotcSignal = 'WotC bracket 1–2 compatible';
-  if(gc >= 4) wotcSignal = 'WotC bracket 4+ signal';
+  if(gc >= 4) wotcSignal = 'WotC bracket 4–5 signal';
   else if(gc >= 1) wotcSignal = 'WotC bracket 3 signal';
+
+  let gcDecimalBonus = 0;
+  if(gc === 1) gcDecimalBonus = 0.10;
+  else if(gc === 2) gcDecimalBonus = 0.20;
+  else if(gc === 3) gcDecimalBonus = 0.30;
+  else if(gc >= 4 && gc <= 7) gcDecimalBonus = 0.35;
+  else if(gc <= 11) gcDecimalBonus = 0.45;
+  else if(gc <= 15) gcDecimalBonus = 0.55;
+  else if(gc <= 19) gcDecimalBonus = 0.65;
+  else if(gc >= 20) gcDecimalBonus = 0.75;
 
   const earlyPressure = getEarlyPressureStats(batch);
   let earlyPressureBonus = 0;
   let bracketFiveByPressure = false;
-
-  if(gc >= 4){
-    if(syntheticTotal < 24){
-      syntheticTotal = 24;
-      base = 4;
-    }
-    if(batch && earlyPressure.t1 >= 8){
+  if(gc >= 4 && batch){
+    if(earlyPressure.t1 >= 8){
       bracketFiveByPressure = true;
-      return {
-        value:'5.0',
-        label:labels[5],
-        categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm,
-        syntheticTotal:Math.max(syntheticTotal, 32),
-        gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
-        earlyPressure, earlyPressureBonus, bracketFiveByPressure
-      };
     }
-    if(batch){
-      const ep = earlyPressure.weighted13;
-      if(ep >= 0.55) earlyPressureBonus = 0.5;
-      else if(ep >= 0.40) earlyPressureBonus = 0.4;
-      else if(ep >= 0.30) earlyPressureBonus = 0.3;
-      else if(ep >= 0.20) earlyPressureBonus = 0.2;
-      else if(ep >= 0.10) earlyPressureBonus = 0.1;
-    }
+    const ep = earlyPressure.weighted13;
+    if(ep >= 0.55) earlyPressureBonus = 0.5;
+    else if(ep >= 0.40) earlyPressureBonus = 0.4;
+    else if(ep >= 0.30) earlyPressureBonus = 0.3;
+    else if(ep >= 0.20) earlyPressureBonus = 0.2;
+    else if(ep >= 0.10) earlyPressureBonus = 0.1;
   }
 
-  if(base === 5){
-    return {
-      value:'5.0',
-      label:labels[5],
-      categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal,
-      gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
-      earlyPressure, earlyPressureBonus, bracketFiveByPressure
-    };
+  let baseRating = 1.0;
+  if(syntheticTotal >= 32){
+    baseRating = 5.0;
+  }else if(syntheticTotal >= 24){
+    baseRating = 4.0 + ((syntheticTotal - 24) / 8) * 0.9;
+  }else if(syntheticTotal >= 15){
+    baseRating = 3.0 + ((syntheticTotal - 15) / 9) * 0.9;
+  }else if(syntheticTotal >= 9){
+    baseRating = 2.0 + ((syntheticTotal - 9) / 6) * 0.9;
+  }else{
+    baseRating = 1.0 + (syntheticTotal / 9) * 0.9;
   }
 
-  const ranges = {1:[0,8],2:[9,14],3:[15,23],4:[24,31]};
-  const [minT,maxT] = ranges[base];
-  let dec = ((syntheticTotal - minT) / Math.max(1, (maxT - minT))) * 0.9;
-  if(benchmarkNorm >= 0.85) dec += 0.08;
-  else if(benchmarkNorm < 0.55) dec -= 0.08;
-  if(goldfishNorm >= 0.8) dec += 0.08;
-  else if(goldfishNorm < 0.45) dec -= 0.08;
-  dec += gcDecimalBonus;
-  if(gc >= 4) dec += earlyPressureBonus;
-  dec = Math.max(0, Math.min(0.9, dec));
-  if(gc >= 4 && base < 4){ base = 4; }
+  let qualityAdjustment = 0;
+  if(benchmarkNorm >= 0.85) qualityAdjustment += 0.08;
+  else if(benchmarkNorm < 0.55) qualityAdjustment -= 0.08;
+  if(goldfishNorm >= 0.8) qualityAdjustment += 0.08;
+  else if(goldfishNorm < 0.45) qualityAdjustment -= 0.08;
 
-  const decimalDigit = Math.round(dec * 10);
+  let finalRating = baseRating + qualityAdjustment + gcDecimalBonus + earlyPressureBonus;
+
+  const hitBracketFiveThreshold = syntheticTotal >= 32 || bracketFiveByPressure;
+  if(hitBracketFiveThreshold) finalRating = Math.max(5.0, finalRating);
+
+  finalRating = Math.max(1.0, Math.round(finalRating * 10) / 10);
+
+  let label = labels[1];
+  if(finalRating >= 5.0) label = labels[5];
+  else if(finalRating >= 4.0) label = labels[4];
+  else if(finalRating >= 3.0) label = labels[3];
+  else if(finalRating >= 2.0) label = labels[2];
+
   return {
-    value: `${base}.${decimalDigit}`,
-    label: labels[base],
+    value: finalRating.toFixed(1),
+    label,
     categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal,
     gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
-    earlyPressure, earlyPressureBonus, bracketFiveByPressure
+    earlyPressure, earlyPressureBonus, bracketFiveByPressure,
+    baseRating: Math.round(baseRating * 10) / 10,
+    qualityAdjustment: Math.round(qualityAdjustment * 100) / 100,
+    hitBracketFiveThreshold
   };
 }
 
@@ -950,14 +955,18 @@ function summarizeAnalysis(a){
     const tr = current.trueRating;
     const ep = tr.earlyPressure || {t1:0,t2:0,t3:0,t4:0,weighted13:0};
     let gcText = `${tr.gameChangerCount} found, which reads as ${tr.wotcSignal}`;
-    if(tr.bracketFiveByPressure){
-      gcText += ` and forces a 5.0 because the deck showed ${ep.t1} turn-1 probable wins/overwhelms across 100 goldfish runs.`;
-    } else if(tr.gameChangerCount >= 4){
-      gcText += `, floors the deck at bracket 4+, and adds a +${tr.earlyPressureBonus.toFixed(1)} early-pressure decimal bonus from turns 1–3 (T1=${ep.t1}, T2=${ep.t2}, T3=${ep.t3}).`;
-    } else if(tr.gameChangerBonus){
-      gcText += ` and adds a +${tr.gameChangerBonus.toFixed(1)} decimal pressure modifier.`;
+    if(tr.gameChangerBonus){
+      gcText += ` and adds a +${tr.gameChangerBonus.toFixed(1)} Game Changer modifier.`;
     }
-    lines.push(`True bracket rating blends three signals: category score ${Math.round(tr.categoryNorm*100)}%, benchmark coverage ${Math.round(tr.benchmarkNorm*100)}%, and goldfish performance ${Math.round(tr.goldfishNorm*100)}%. Game changers then apply a separate WotC-style signal: ${gcText} Final blended rating: ${tr.value} in ${tr.label}.`);
+    if(tr.gameChangerCount >= 4 && tr.earlyPressureBonus){
+      gcText += ` Early pressure from turns 1–3 adds another +${tr.earlyPressureBonus.toFixed(1)} (T1=${ep.t1}, T2=${ep.t2}, T3=${ep.t3}).`;
+    }
+    if(tr.bracketFiveByPressure){
+      gcText += ` Because the deck showed ${ep.t1} turn-1 probable wins/overwhelms across 100 goldfish runs, it meets the bracket-5 threshold and is floored at 5.0 before modifiers.`;
+    } else if(tr.hitBracketFiveThreshold){
+      gcText += ` The blended base score already meets the bracket-5 threshold, so the rating is floored at 5.0 before modifiers.`;
+    }
+    lines.push(`True bracket rating blends three signals: category score ${Math.round(tr.categoryNorm*100)}%, benchmark coverage ${Math.round(tr.benchmarkNorm*100)}%, and goldfish performance ${Math.round(tr.goldfishNorm*100)}%. The continuous base rating starts at ${tr.baseRating.toFixed(1)} with a ${tr.qualityAdjustment >= 0 ? '+' : ''}${tr.qualityAdjustment.toFixed(2)} quality adjustment from benchmarks and goldfish. Game changers then apply a separate WotC-style signal: ${gcText} Final blended rating: ${tr.value} in ${tr.label}.`);
   } else {
     lines.push(`This produces a provisional ${a.bracket.value} rating in ${a.bracket.label}. Run the 100-game goldfish to upgrade that into the true blended bracket decimal rating.`);
   }
@@ -1024,14 +1033,65 @@ function chooseCastOrder(hand, commanders, commanderCastable, sources, genericMa
   return null;
 }
 function commanderCanCast(commanders, battlefield){ if(!commanders.length) return false; const mana = battlefield.filter(p=>p.produces).length; return commanders.some(cmd => canCast(cmd, battlefield.filter(p=>p.produces), mana)); }
-function inferProbableWinTurn(turn, hand, battlefield, commanders){
-  const sources = battlefield.filter(p=>p.produces); const mana = sources.length;
-  const finisher = hand.find(c => c.tags.finisher && canCast(c, sources, mana));
-  if(finisher) return turn;
+function numericPower(card){
+  const raw = card?.power;
+  if(raw == null) return 0;
+  const n = parseInt(String(raw).replace(/\*/g,'0'), 10);
+  return Number.isFinite(n) ? n : 0;
+}
+function evaluateBattleState(turn, hand, battlefield, commanders){
+  const sources = battlefield.filter(p=>p.produces);
+  const mana = sources.length;
+  const boardCards = battlefield.map(p => p.card);
+  const creatures = boardCards.filter(c => (c.type_line || '').toLowerCase().includes('creature'));
+  const creatureCount = creatures.length;
+  const totalPower = creatures.reduce((sum, c) => sum + Math.max(0, numericPower(c)), 0);
   const commanderOnBoard = battlefield.some(p => p.kind === 'commander');
-  const synergyCount = battlefield.filter(p => p.card.tags && p.card.tags.synergy).length;
-  if(commanderOnBoard && synergyCount >= 3 && mana >= 7) return turn + 1;
-  return null;
+  const synergyOnBoard = boardCards.filter(c => c.tags && c.tags.synergy).length;
+  const finishersOnBoard = boardCards.filter(c => c.tags && c.tags.finisher).length;
+  const castableFinisher = hand.find(c => c.tags && c.tags.finisher && canCast(c, sources, mana));
+  const handDraw = hand.filter(c => c.tags && c.tags.draw).length;
+  const handProtection = hand.filter(c => c.tags && c.tags.protection).length;
+  const battleRamp = boardCards.filter(c => c.tags && c.tags.ramp).length;
+  const battleDraw = boardCards.filter(c => c.tags && c.tags.draw).length;
+  const gameChangersOnline = boardCards.filter(c => c.tags && c.tags.gameChanger).length;
+
+  let pressureScore = 0;
+  if(mana >= 5) pressureScore += 1;
+  if(mana >= 7) pressureScore += 2;
+  if(mana >= 10) pressureScore += 2;
+  if(creatureCount >= 3) pressureScore += 1;
+  if(creatureCount >= 5) pressureScore += 2;
+  if(totalPower >= 10) pressureScore += 1;
+  if(totalPower >= 18) pressureScore += 2;
+  if(totalPower >= 28) pressureScore += 3;
+  if(commanderOnBoard) pressureScore += 1;
+  if(synergyOnBoard >= 2) pressureScore += 1;
+  if(synergyOnBoard >= 4) pressureScore += 2;
+  if(finishersOnBoard >= 1) pressureScore += 3;
+  if(castableFinisher) pressureScore += 3;
+  if(battleRamp >= 3) pressureScore += 1;
+  if(battleDraw >= 2 || handDraw >= 2) pressureScore += 1;
+  if(handProtection >= 1) pressureScore += 1;
+  if(gameChangersOnline >= 2) pressureScore += 1;
+
+  const likelyWinNow = !!castableFinisher && (mana >= 7 || totalPower >= 16 || synergyOnBoard >= 3 || finishersOnBoard >= 1);
+  const overwhelmingNow = likelyWinNow ||
+    (finishersOnBoard >= 1 && (creatureCount >= 3 || totalPower >= 14)) ||
+    (mana >= 10 && (handDraw >= 2 || battleDraw >= 2) && synergyOnBoard >= 2) ||
+    (creatureCount >= 5 && totalPower >= 18) ||
+    (commanderOnBoard && synergyOnBoard >= 4 && mana >= 7);
+  const strongPressure = overwhelmingNow || pressureScore >= 8 || (mana >= 8 && (hand.length >= 4 || battleDraw >= 1));
+
+  if(likelyWinNow) return { state:'likely win', projectedTurn:turn, pressureScore, totalPower, creatureCount, mana };
+  if(overwhelmingNow) return { state:'overwhelm', projectedTurn:Math.min(FULL_SIM_TURNS, turn + 1), pressureScore, totalPower, creatureCount, mana };
+  if(strongPressure) return { state:'pressure', projectedTurn:Math.min(FULL_SIM_TURNS, turn + 2), pressureScore, totalPower, creatureCount, mana };
+  return { state:null, projectedTurn:null, pressureScore, totalPower, creatureCount, mana };
+}
+function inferProbableWinTurn(turn, hand, battlefield, commanders){
+  const state = evaluateBattleState(turn, hand, battlefield, commanders);
+  if(state.state === 'likely win' || state.state === 'overwhelm') return state;
+  return state;
 }
 function simulateGame(allCards, commanders){
   const split = splitCommandZone(allCards); const library0 = shuffle(split.library); const mull = doMulligan(library0);
@@ -1039,6 +1099,8 @@ function simulateGame(allCards, commanders){
   const maxTurns = FULL_SIM_TURNS; const commandersLeft = commanders.slice();
   const hit = { drawTurn:null, rampTurn:null, removalTurn:null, protectionTurn:null, finisherTurn:null, synergyTurn:null, fourLandsTurn:null, rock1Turn:null };
   let probableWinTurn = null;
+  let probableState = null;
+  let pressureTurn = null;
   const utilityTimeline = {};
   for(let turn=1; turn<=maxTurns; turn++){
     const events = []; events.push(`Turn ${turn}: untap/upkeep`);
@@ -1073,7 +1135,9 @@ function simulateGame(allCards, commanders){
         if(card.tags.rock1 && hit.rock1Turn===null) hit.rock1Turn = turn;
         if(card.tags.protection && hit.protectionTurn===null) hit.protectionTurn = turn;
       }
-      if(probableWinTurn === null){ const guess = inferProbableWinTurn(turn, hand, battlefield, commanders); if(guess !== null) probableWinTurn = Math.min(FULL_SIM_TURNS, guess); }
+      const stateEval = inferProbableWinTurn(turn, hand, battlefield, commanders);
+      if(pressureTurn === null && stateEval && stateEval.state === 'pressure') pressureTurn = stateEval.projectedTurn;
+      if(probableWinTurn === null && stateEval && (stateEval.state === 'likely win' || stateEval.state === 'overwhelm')){ probableWinTurn = Math.min(FULL_SIM_TURNS, stateEval.projectedTurn); probableState = stateEval.state; }
       actionCount++;
     }
     utilityTimeline[turn] = {
@@ -1086,9 +1150,11 @@ function simulateGame(allCards, commanders){
       battleRemoval: battlefield.filter(p=>p.card.tags && (p.card.tags.removal || p.card.tags.wipe)).length,
       battleProtection: battlefield.filter(p=>p.card.tags && p.card.tags.protection).length,
     };
-    turns.push({turn, events, hand:hand.map(c=>`${c.name} ${c.mana_cost||''}`.trim()), battlefield:battlefield.map(p=>p.card.name)});
+    const turnState = evaluateBattleState(turn, hand, battlefield, commanders);
+    if(turnState.state) events.push(`Board state: ${turnState.state} (score ${turnState.pressureScore}, mana ${turnState.mana}, creatures ${turnState.creatureCount}, power ${turnState.totalPower})`);
+    turns.push({turn, events, hand:hand.map(c=>`${c.name} ${c.mana_cost||''}`.trim()), battlefield:battlefield.map(p=>p.card.name), state:turnState.state});
   }
-  return {mulliganLog:mull.log, mulligansTaken:mull.mulligansTaken, keptHandSize:mull.handSize, turns, commandCastTurn, hit, probableWinTurn, utilityTimeline};
+  return {mulliganLog:mull.log, mulligansTaken:mull.mulligansTaken, keptHandSize:mull.handSize, turns, commandCastTurn, hit, probableWinTurn, probableState, pressureTurn, utilityTimeline};
 }
 
 function runBatchGoldfish(runs){
@@ -1335,7 +1401,7 @@ ul{margin:8px 0 0 20px} pre{white-space:pre-wrap;font-family:inherit} .pill{disp
 </style></head><body>
 <h1>Single goldfish</h1>
 <div class="card">
-  <div><span class="pill">Kept hand size: ${sim.keptHandSize}</span><span class="pill">Mulligans: ${sim.mulligansTaken}</span><span class="pill">Commander turn: ${sim.commandCastTurn ?? 'not cast'}</span><span class="pill">Probable win/overwhelm: ${sim.probableWinTurn ?? 'not reached by turn ' + FULL_SIM_TURNS}</span></div>
+  <div><span class="pill">Kept hand size: ${sim.keptHandSize}</span><span class="pill">Mulligans: ${sim.mulligansTaken}</span><span class="pill">Commander turn: ${sim.commandCastTurn ?? 'not cast'}</span><span class="pill">Pressure turn: ${sim.pressureTurn ?? 'not reached'}</span><span class="pill">Probable ${sim.probableState || 'win/overwhelm'}: ${sim.probableWinTurn ?? 'not reached by turn ' + FULL_SIM_TURNS}</span></div>
 </div>
 <div class="card"><h2>Mulligans</h2><pre>${escapeHtml(sim.mulliganLog.join('\n\n'))}</pre></div>
 ${sim.turns.map(t=>`<div class="card"><h2>Turn ${t.turn}</h2><ul>${t.events.map(e=>`<li>${escapeHtml(e)}</li>`).join('')}</ul><div class="muted" style="margin-top:8px">Hand: ${escapeHtml(t.hand.join(', '))}</div><div class="muted" style="margin-top:4px">Battlefield: ${escapeHtml(t.battlefield.join(', '))}</div></div>`).join('')}
