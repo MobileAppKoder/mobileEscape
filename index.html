@@ -159,7 +159,7 @@ footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
       </div>
       <div class="row4">
         <div><label>Turn 6: removal</label><input id="bmRemoval6" type="number" min="0" max="40" value="10" /></div>
-        <div><label>Turn 7: synergy</label><input id="bmSynergy7" type="number" min="0" max="60" value="30" /></div>
+        <div><label>Game changers (tracked automatically)</label><input id="bmSynergy7" type="number" min="0" max="99" value="0" readonly /></div>
         <div><label>Turn 8: finisher</label><input id="bmFinisher8" type="number" min="0" max="20" value="5" /></div>
         <div><label>Land formula override</label><input id="karstenOverride" type="number" min="0" max="60" placeholder="optional" /></div>
       </div>
@@ -282,6 +282,7 @@ footer{padding:18px 0 34px;color:var(--muted);font-size:12px}
     </div>
     <div class="row">
       <div><h3>Synergy pieces</h3><div id="listSynergy"></div></div>
+      <div><h3>Game changers</h3><div id="listGameChangers"></div></div>
       <div><h3>Tutors / selection</h3><div id="listTutors"></div></div>
     </div>
   </section>
@@ -412,7 +413,7 @@ async function fetchScryfallCards(entries){
 }
 
 function fallbackCard(name){
-  return { name, cmc: 0, colors: [], color_identity: [], type_line: '', oracle_text: '', produced_mana: [], tags: {}, mana_cost: '' };
+  return { name, cmc: 0, colors: [], color_identity: [], type_line: '', oracle_text: '', produced_mana: [], tags: {}, mana_cost: '', game_changer:false };
 }
 
 function normalizeCard(c){
@@ -430,9 +431,10 @@ function normalizeCard(c){
     mana_cost,
     produced_mana: c.produced_mana || [],
     keywords: c.keywords || [],
+    game_changer: !!c.game_changer,
     tags: classifyCard({
       name:c.name, cmc:c.cmc||0, type_line, oracle_text, mana_cost, colors:c.colors||[], color_identity:c.color_identity||[],
-      produced_mana:c.produced_mana||[], keywords:c.keywords||[]
+      produced_mana:c.produced_mana||[], keywords:c.keywords||[], game_changer: !!c.game_changer
     })
   };
 }
@@ -446,7 +448,7 @@ function classifyCard(card){
   const isArtifact = type.includes('artifact');
   const tags = {
     land:isLand, ramp:false, draw:false, removal:false, wipe:false, protection:false, recursion:false,
-    finisher:false, synergy:false, rock1:false, tutor:false, counter:false
+    finisher:false, synergy:false, rock1:false, tutor:false, counter:false, gameChanger: !!card.game_changer
   };
 
   const anyMana = /add one mana of any color|mana of any color/.test(text);
@@ -494,7 +496,7 @@ function renderSimpleList(id, names){
   el.innerHTML = names.map(n => `<div class="item"><span class="name">${escapeHtml(n)}</span></div>`).join('');
 }
 function countTags(cards){
-  const counts = {lands:0,ramp:0,draw:0,removal:0,wipe:0,protection:0,recursion:0,finisher:0,synergy:0,tutor:0,rock1:0,counter:0};
+  const counts = {lands:0,ramp:0,draw:0,removal:0,wipe:0,protection:0,recursion:0,finisher:0,synergy:0,tutor:0,rock1:0,counter:0,gameChanger:0};
   for(const c of (cards || [])){
     const tags = c?.tags || {};
     if(tags.land) counts.lands++;
@@ -680,7 +682,7 @@ function convertTotalToBracket(total, counts, commanderTurn, commanderFit){
   let dec = Math.max(0, Math.min(.9, Math.round(frac*9)/10));
   if(counts.tutor >= 4) dec += 0.1;
   if(counts.rock1 >= 3) dec += 0.1;
-  if(counts.finisher >= 8 && counts.synergy >= 20) dec += 0.1;
+  if(counts.finisher >= 8) dec += 0.1;
   if(commanderTurn >= 6) dec -= 0.1;
   if(!commanderFit.overlapStrong) dec -= 0.1;
   dec = Math.max(0, Math.min(.9, Math.round(dec*10)/10));
@@ -709,7 +711,7 @@ function recomputeFromSliders(){
   current.trueRating = computeTrueBracketRating(current.analysis, current.batch, total);
   $('bracketScore').textContent = current.trueRating.value;
   $('bracketLabel').textContent = current.trueRating.label;
-  $('totalScoreText').textContent = `Category total: ${total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}%`;
+  $('totalScoreText').textContent = `Category total: ${total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}% • ${current.trueRating.wotcSignal}`;
 }
 function populateRoleAdjustmentInputs(counts){
   $('adjRamp').value = counts.ramp || 0;
@@ -740,7 +742,7 @@ function renderRoleCounts(counts){
     ['Lands',counts.lands],['Ramp / rocks / dorks',counts.ramp],['Card advantage / draw',counts.draw],
     ['Spot interaction',Math.max(0,(counts.removal||0)-(counts.wipe||0))],['Board wipes',counts.wipe],
     ['Protection',counts.protection],['Recursion',counts.recursion],['Finishers',counts.finisher],
-    ['Synergy pieces',counts.synergy],['Tutors / selection',counts.tutor||0],['1-drop rocks',counts.rock1||0],['Counter / deflect',counts.counter||0]
+    ['Synergy pieces',counts.synergy],['Game changers',counts.gameChanger||0],['Tutors / selection',counts.tutor||0],['1-drop rocks',counts.rock1||0],['Counter / deflect',counts.counter||0]
   ].map(([k,v]) => `<div class="item"><span class="name">${escapeHtml(k)}</span><span>${v}</span></div>`).join('');
 }
 function updateAnalysisDisplay(){
@@ -748,13 +750,13 @@ function updateAnalysisDisplay(){
   current.trueRating = computeTrueBracketRating(current.analysis, current.batch);
   $('bracketScore').textContent = current.trueRating.value;
   $('bracketLabel').textContent = current.trueRating.label;
-  $('totalScoreText').textContent = `Category total: ${current.analysis.total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}%`;
+  $('totalScoreText').textContent = `Category total: ${current.analysis.total} / 35 • Benchmarks: ${Math.round(current.trueRating.benchmarkNorm*100)}% • Goldfish: ${Math.round(current.trueRating.goldfishNorm*100)}% • ${current.trueRating.wotcSignal}`;
   $('kpiCards').textContent = current.parsed.length;
   $('kpiLands').textContent = current.analysis.rawCounts.lands;
   $('kpiNonlands').textContent = current.parsed.length - current.analysis.rawCounts.lands;
   $('kpiKarsten').textContent = current.analysis.karsten.suggested.toFixed(1);
   $('commandFit').textContent = current.analysis.commanderFit.text;
-  $('summary').innerHTML = escapeHtml(summarizeAnalysis(current.analysis)).replace(/\\n\\n/g, '<br><br>');
+  $('summary').innerHTML = escapeHtml(summarizeAnalysis(current.analysis)).replace(/\n\n/g, '<br><br>');
   renderRoleCounts(current.analysis.counts);
   renderScores(current.analysis);
   benchmarkRows(current.parsed, current.analysis.counts);
@@ -763,6 +765,7 @@ function applyAdjustedRoleAnalysis(){
   if(!current.parsed || !current.parsed.length){ alert('Analyze a deck first.'); return; }
   current.adjustedCounts = getAdjustedRoleCountsFromInputs();
   current.analysis = scoreDeck(current.parsed, current.commanders, current.adjustedCounts);
+  $('bmSynergy7').value = String(current.analysis.counts.gameChanger || 0);
   updateAnalysisDisplay();
   setStatus('Reanalyzed using adjusted role counts.', true);
 }
@@ -770,21 +773,34 @@ function resetAdjustedRoleAnalysis(){
   if(!current.parsed || !current.parsed.length){ return; }
   current.adjustedCounts = null;
   current.analysis = scoreDeck(current.parsed, current.commanders, null);
+  $('bmSynergy7').value = String(current.analysis.counts.gameChanger || 0);
   populateRoleAdjustmentInputs(current.analysis.rawCounts || countTags(current.parsed));
   updateAnalysisDisplay();
   setStatus('Reset to detected role counts.', true);
 }
 
+function benchmarkRows(cards, roleCountsOverride = null){
+  const counts = roleCountsOverride || (current.analysis?.counts) || countTags(cards || []);
+  const rows = benchmarkCoverageRows(counts);
+  $('benchmarks').innerHTML = `<table class="table"><thead><tr><th>Benchmark</th><th>Deck count</th><th>Target</th><th>% of target</th><th>Read</th></tr></thead><tbody>${
+    rows.map(r=>{
+      const valueCell = r.key === 'gameChanger' ? escapeHtml(r.valueText || String(r.have)) : `${r.have} / ${r.need}`;
+      const pctCell = r.key === 'gameChanger' ? '—' : `${(r.pct * 100).toFixed(1)}%`;
+      return `<tr><td>${escapeHtml(r.label)}</td><td>${valueCell}</td><td>${escapeHtml(r.hit || '')}</td><td>${pctCell}</td><td class="${r.grade}">${escapeHtml(r.read)}</td></tr>`;
+    }).join('')
+  }</tbody></table>`;
+}
+
 function benchmarkCoverageRows(counts){
-  return [
+  const rows = [
     {key:'rock1', label:'Turn 1: 1-drop rock', have:counts.rock1, need:+$('bmRock1').value, hit:'77%'},
     {key:'ramp', label:'Turn 2: ramp', have:counts.ramp, need:+$('bmRamp2').value, hit:'76.2%'},
     {key:'draw', label:'Turn 3: draw', have:counts.draw, need:+$('bmDraw3').value, hit:'74.3%'},
     {key:'lands', label:'Turn 4: 4+ lands benchmark', have:counts.lands, need:+$('bmLands4').value, hit:'75%'},
     {key:'removal', label:'Turn 6: interaction', have:counts.removal, need:+$('bmRemoval6').value, hit:'77.3%'},
-    {key:'synergy', label:'Turn 7: synergy', have:counts.synergy, need:+$('bmSynergy7').value, hit:'86.5%'},
     {key:'finisher', label:'Turn 8: finisher', have:counts.finisher, need:+$('bmFinisher8').value, hit:'84.3%'}
-  ].map(r => {
+  ];
+  const graded = rows.map(r => {
     const pct = r.need > 0 ? (r.have / r.need) : 0;
     let grade = 'bad';
     let read = 'Bad';
@@ -792,18 +808,38 @@ function benchmarkCoverageRows(counts){
     else if(pct >= 0.65){ grade = 'warn'; read = 'Close'; }
     else if(pct >= 0.50){ grade = 'good'; read = 'Good enough'; }
     else if(pct >= 0.35){ grade = 'warn'; read = 'Not enough'; }
-    return {...r, pct, grade, read};
+    return {...r, pct, grade, read, scorePct: Math.min(1, pct)};
   });
+
+  const gc = counts.gameChanger || 0;
+  let gcSignal = 'WotC bracket 1–2 compatible';
+  let gcGrade = 'good';
+  let gcValueText = '0 game changers';
+  if(gc >= 4){ gcSignal = 'WotC bracket 4+ signal'; gcGrade = 'bad'; gcValueText = `${gc} game changers`; }
+  else if(gc >= 1){ gcSignal = 'WotC bracket 3 signal'; gcGrade = 'warn'; gcValueText = `${gc} game changer${gc===1?'':'s'}`; }
+  graded.push({
+    key:'gameChanger',
+    label:'Game changers',
+    have:gc,
+    need:0,
+    hit:'WotC bracket signal',
+    pct: gc >= 4 ? 1 : (gc >= 1 ? gc/3 : 0),
+    grade: gcGrade,
+    read: gcSignal,
+    scorePct: null,
+    valueText: gcValueText
+  });
+  return graded;
 }
 function benchmarkCoverageScore(counts){
-  const rows = benchmarkCoverageRows(counts);
-  return rows.reduce((a,r)=>a + Math.min(1, r.pct), 0) / Math.max(1, rows.length);
+  const rows = benchmarkCoverageRows(counts).filter(r => r.scorePct !== null);
+  return rows.reduce((a,r)=>a + Math.min(1, r.scorePct), 0) / Math.max(1, rows.length);
 }
 function goldfishQualityScore(batch){
   if(!batch) return null;
   const hitRates = [
     batch.benchmarkHits.rock1,batch.benchmarkHits.ramp,batch.benchmarkHits.draw,batch.benchmarkHits.lands,
-    batch.benchmarkHits.removal,batch.benchmarkHits.synergy,batch.benchmarkHits.finisher
+    batch.benchmarkHits.removal,batch.benchmarkHits.finisher
   ].map(v => v / Math.max(1, batch.runs));
   const hitAvg = hitRates.reduce((a,b)=>a+b,0) / hitRates.length;
   const commanderSpeed = batch.avgCommander == null ? 0.25 : Math.max(0, Math.min(1, (8 - batch.avgCommander) / 6));
@@ -811,22 +847,76 @@ function goldfishQualityScore(batch){
   const mulliganEase = Math.max(0, Math.min(1, 1 - (batch.avgMulligans / 3)));
   return 0.45 * hitAvg + 0.2 * commanderSpeed + 0.25 * winSpeed + 0.1 * mulliganEase;
 }
+function getEarlyPressureStats(batch){
+  const t1 = batch?.winTurns?.[1] || 0;
+  const t2 = batch?.winTurns?.[2] || 0;
+  const t3 = batch?.winTurns?.[3] || 0;
+  const t4 = batch?.winTurns?.[4] || 0;
+  const runs = Math.max(1, batch?.runs || 100);
+  const weighted13 = (4 * t1 + 3 * t2 + 2 * t3) / runs;
+  return { t1, t2, t3, t4, weighted13 };
+}
+
 function computeTrueBracketRating(analysis, batch=null, totalOverride=null){
   const total = totalOverride == null ? analysis.total : totalOverride;
   const categoryNorm = Math.max(0, Math.min(1, total / 35));
   const benchmarkNorm = benchmarkCoverageScore(analysis.counts);
   const goldfishNorm = batch ? goldfishQualityScore(batch) : (0.55 * categoryNorm + 0.45 * benchmarkNorm);
   const blendedNorm = 0.55 * categoryNorm + 0.20 * benchmarkNorm + 0.25 * goldfishNorm;
-  const syntheticTotal = blendedNorm * 35;
+  let syntheticTotal = blendedNorm * 35;
+  const gc = analysis.counts.gameChanger || 0;
+  const gcDecimalBonus = gc >= 4 ? 0 : (gc === 3 ? 0.3 : (gc === 2 ? 0.2 : (gc === 1 ? 0.1 : 0)));
   let base = 1;
   if(syntheticTotal >= 32) base = 5;
   else if(syntheticTotal >= 24) base = 4;
   else if(syntheticTotal >= 15) base = 3;
   else if(syntheticTotal >= 9) base = 2;
   const labels = {1:'Jank / Theme First',2:'Casual / Functional',3:'High-Power Casual',4:'Very High Power / cEDH-Adjacent',5:'cEDH / Competitive'};
-  if(base === 5){
-    return { value:'5.0', label:labels[5], categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal };
+
+  let wotcSignal = 'WotC bracket 1–2 compatible';
+  if(gc >= 4) wotcSignal = 'WotC bracket 4+ signal';
+  else if(gc >= 1) wotcSignal = 'WotC bracket 3 signal';
+
+  const earlyPressure = getEarlyPressureStats(batch);
+  let earlyPressureBonus = 0;
+  let bracketFiveByPressure = false;
+
+  if(gc >= 4){
+    if(syntheticTotal < 24){
+      syntheticTotal = 24;
+      base = 4;
+    }
+    if(batch && earlyPressure.t1 >= 8){
+      bracketFiveByPressure = true;
+      return {
+        value:'5.0',
+        label:labels[5],
+        categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm,
+        syntheticTotal:Math.max(syntheticTotal, 32),
+        gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
+        earlyPressure, earlyPressureBonus, bracketFiveByPressure
+      };
+    }
+    if(batch){
+      const ep = earlyPressure.weighted13;
+      if(ep >= 0.55) earlyPressureBonus = 0.5;
+      else if(ep >= 0.40) earlyPressureBonus = 0.4;
+      else if(ep >= 0.30) earlyPressureBonus = 0.3;
+      else if(ep >= 0.20) earlyPressureBonus = 0.2;
+      else if(ep >= 0.10) earlyPressureBonus = 0.1;
+    }
   }
+
+  if(base === 5){
+    return {
+      value:'5.0',
+      label:labels[5],
+      categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal,
+      gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
+      earlyPressure, earlyPressureBonus, bracketFiveByPressure
+    };
+  }
+
   const ranges = {1:[0,8],2:[9,14],3:[15,23],4:[24,31]};
   const [minT,maxT] = ranges[base];
   let dec = ((syntheticTotal - minT) / Math.max(1, (maxT - minT))) * 0.9;
@@ -834,34 +924,40 @@ function computeTrueBracketRating(analysis, batch=null, totalOverride=null){
   else if(benchmarkNorm < 0.55) dec -= 0.08;
   if(goldfishNorm >= 0.8) dec += 0.08;
   else if(goldfishNorm < 0.45) dec -= 0.08;
+  dec += gcDecimalBonus;
+  if(gc >= 4) dec += earlyPressureBonus;
   dec = Math.max(0, Math.min(0.9, dec));
+  if(gc >= 4 && base < 4){ base = 4; }
+
   const decimalDigit = Math.round(dec * 10);
   return {
     value: `${base}.${decimalDigit}`,
     label: labels[base],
-    categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal
+    categoryNorm, benchmarkNorm, goldfishNorm, blendedNorm, syntheticTotal,
+    gameChangerCount:gc, gameChangerBonus:gcDecimalBonus, wotcSignal,
+    earlyPressure, earlyPressureBonus, bracketFiveByPressure
   };
 }
-function benchmarkRows(cards, roleCountsOverride=null){
-  const detected = countTags(cards);
-  const counts = roleCountsOverride ? {...detected, ...roleCountsOverride} : detected;
-  const rows = benchmarkCoverageRows(counts);
-  $('benchmarks').innerHTML = `<table class="table"><thead><tr><th>Benchmark</th><th>Deck / Target</th><th>Coverage</th><th>Read</th></tr></thead><tbody>${
-    rows.map(r=>{
-      const pctText = (r.pct * 100).toFixed(1) + '%';
-      return `<tr><td>${escapeHtml(r.label)}</td><td>${r.have} / ${r.need} <span class="small">(${r.hit})</span></td><td>${pctText}</td><td class="${r.grade}">${r.read}</td></tr>`;
-    }).join('')
-  }</tbody></table>`;
-}
+
 function summarizeAnalysis(a){
   const c = a.counts;
   const lines = [];
-  lines.push(`The classifier sees ${c.lands} lands, ${c.ramp} ramp pieces, ${c.draw} draw/advantage cards, ${Math.max(0,(c.removal||0)-(c.wipe||0))} spot interaction cards, ${c.wipe} board wipes, ${c.protection} protection cards, ${c.recursion} recursion cards, ${c.synergy} synergy cards, and ${c.finisher} finishers.`);
+  lines.push(`The classifier sees ${c.lands} lands, ${c.ramp} ramp pieces, ${c.draw} draw/advantage cards, ${Math.max(0,(c.removal||0)-(c.wipe||0))} spot interaction cards, ${c.wipe} board wipes, ${c.protection} protection cards, ${c.recursion} recursion cards, ${c.synergy} synergy cards, ${c.finisher} finishers, and ${c.gameChanger||0} game changers.`);
   lines.push(`Estimated commander landing turn: about turn ${a.estimatedTurnCommander}. Average nonland mana value: ${a.avgCmc.toFixed(2)}.`);
   lines.push(`Karsten mana-base suggestion: ${a.karsten.suggested.toFixed(1)} lands from 31.42 + 3.13 × AMV − 0.28 × Ramp. Your current deck shows ${c.lands} lands.`);
   lines.push(a.commanderFit.text);
   if(current.trueRating){
-    lines.push(`True bracket rating blends three signals: category score ${Math.round(current.trueRating.categoryNorm*100)}%, benchmark coverage ${Math.round(current.trueRating.benchmarkNorm*100)}%, and goldfish performance ${Math.round(current.trueRating.goldfishNorm*100)}%. Final blended rating: ${current.trueRating.value} in ${current.trueRating.label}.`);
+    const tr = current.trueRating;
+    const ep = tr.earlyPressure || {t1:0,t2:0,t3:0,t4:0,weighted13:0};
+    let gcText = `${tr.gameChangerCount} found, which reads as ${tr.wotcSignal}`;
+    if(tr.bracketFiveByPressure){
+      gcText += ` and forces a 5.0 because the deck showed ${ep.t1} turn-1 probable wins/overwhelms across 100 goldfish runs.`;
+    } else if(tr.gameChangerCount >= 4){
+      gcText += `, floors the deck at bracket 4+, and adds a +${tr.earlyPressureBonus.toFixed(1)} early-pressure decimal bonus from turns 1–3 (T1=${ep.t1}, T2=${ep.t2}, T3=${ep.t3}).`;
+    } else if(tr.gameChangerBonus){
+      gcText += ` and adds a +${tr.gameChangerBonus.toFixed(1)} decimal pressure modifier.`;
+    }
+    lines.push(`True bracket rating blends three signals: category score ${Math.round(tr.categoryNorm*100)}%, benchmark coverage ${Math.round(tr.benchmarkNorm*100)}%, and goldfish performance ${Math.round(tr.goldfishNorm*100)}%. Game changers then apply a separate WotC-style signal: ${gcText} Final blended rating: ${tr.value} in ${tr.label}.`);
   } else {
     lines.push(`This produces a provisional ${a.bracket.value} rating in ${a.bracket.label}. Run the 100-game goldfish to upgrade that into the true blended bracket decimal rating.`);
   }
@@ -998,7 +1094,7 @@ function simulateGame(allCards, commanders){
 function runBatchGoldfish(runs){
   const batch = {
     runs, sims:[], mulliganHandSizes:{}, commanderTurns:{}, winTurns:{},
-    benchmarkHits:{rock1:0,ramp:0,draw:0,lands:0,removal:0,synergy:0,finisher:0},
+    benchmarkHits:{rock1:0,ramp:0,draw:0,lands:0,removal:0,finisher:0},
     utilityStats:{
       draw:{byTurn:{}}, ramp:{byTurn:{}}, removal:{byTurn:{}}, protection:{byTurn:{}},
       hand:{ramp:Array(FULL_SIM_TURNS+1).fill(0),draw:Array(FULL_SIM_TURNS+1).fill(0),removal:Array(FULL_SIM_TURNS+1).fill(0),protection:Array(FULL_SIM_TURNS+1).fill(0)},
@@ -1023,7 +1119,6 @@ function runBatchGoldfish(runs){
     if(sim.hit.drawTurn && sim.hit.drawTurn <= 3) batch.benchmarkHits.draw++;
     if(sim.hit.fourLandsTurn && sim.hit.fourLandsTurn <= 4) batch.benchmarkHits.lands++;
     if(sim.hit.removalTurn && sim.hit.removalTurn <= 6) batch.benchmarkHits.removal++;
-    if(sim.hit.synergyTurn && sim.hit.synergyTurn <= 7) batch.benchmarkHits.synergy++;
     if(sim.hit.finisherTurn && sim.hit.finisherTurn <= 8) batch.benchmarkHits.finisher++;
     ['draw','ramp','removal','protection'].forEach(key=>{
       const t = sim.hit[key+'Turn'];
@@ -1111,8 +1206,8 @@ function renderBatchCharts(batch){
   for(let t=1;t<=FULL_SIM_TURNS;t++){ winLabels.push(String(t)); winValues.push(batch.winTurns[t] || 0); }
   drawBarChart('chartWins', winLabels, winValues, {yLabel:'Games'});
 
-  const benchLabels = ['T1 rock','T2 ramp','T3 draw','T4 lands','T6 removal','T7 synergy','T8 finisher'];
-  const benchValues = [batch.benchmarkHits.rock1,batch.benchmarkHits.ramp,batch.benchmarkHits.draw,batch.benchmarkHits.lands,batch.benchmarkHits.removal,batch.benchmarkHits.synergy,batch.benchmarkHits.finisher].map(v => Math.round(v*100/batch.runs));
+  const benchLabels = ['T1 rock','T2 ramp','T3 draw','T4 lands','T6 removal','T8 finisher'];
+  const benchValues = [batch.benchmarkHits.rock1,batch.benchmarkHits.ramp,batch.benchmarkHits.draw,batch.benchmarkHits.lands,batch.benchmarkHits.removal,batch.benchmarkHits.finisher].map(v => Math.round(v*100/batch.runs));
   drawBarChart('chartBenchmarks', benchLabels, benchValues, {yLabel:'Hit rate %'});
 
   const hitLabels = Array.from({length:SHORT_TURN_VIEW+1}, (_,i)=> i===SHORT_TURN_VIEW ? `${SHORT_TURN_VIEW}+` : String(i+1));
@@ -1178,6 +1273,7 @@ async function analyze(){
     current.commanders = commanders;
     current.adjustedCounts = null;
     current.analysis = scoreDeck(cards, commanders, null);
+    $('bmSynergy7').value = String(current.analysis.counts.gameChanger || 0);
     populateRoleAdjustmentInputs(current.analysis.rawCounts);
 
     renderSimpleList('listLands', uniqueNames(cards, c=>c.tags && c.tags.land));
@@ -1189,6 +1285,7 @@ async function analyze(){
     renderSimpleList('listRecursion', uniqueNames(cards, c=>c.tags && c.tags.recursion));
     renderSimpleList('listFinishers', uniqueNames(cards, c=>c.tags && c.tags.finisher));
     renderSimpleList('listSynergy', uniqueNames(cards, c=>c.tags && c.tags.synergy && !c.tags.land));
+    renderSimpleList('listGameChangers', uniqueNames(cards, c=>c.tags && c.tags.gameChanger));
     renderSimpleList('listTutors', uniqueNames(cards, c=>c.tags && c.tags.tutor));
 
     const runs = Math.max(10, +$('goldfishRuns').value || 100);
